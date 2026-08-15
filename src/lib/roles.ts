@@ -7,7 +7,7 @@ export type AppRole = "SUPER_ADMIN" | "CONSULTANT" | "CUSTOMER";
 const LEGACY_ROLE_MAP: Record<string, AppRole> = {
   SELLER: "CONSULTANT",
   BUYER: "CUSTOMER",
-  // 사주메이트 시절 역할 — 대응되는 현행 역할이 없어 최소 권한으로 강등
+  // 셀러브릭스 시절 역할 — 대응되는 현행 역할이 없어 최소 권한으로 강등
   NODE: "CUSTOMER",
   MIDDLE_ADMIN: "CUSTOMER",
   BRAND_ADMIN: "CUSTOMER",

@@ -23,19 +23,12 @@ interface User {
   commissionRate?: number | null;
 }
 
-interface MiddleAdminOption {
-  id: string;
-  name: string;
-}
-
 export default function AdminUsersTabsClient({
   users,
   sellers,
-  middleAdmins,
 }: {
   users: User[];
   sellers: Seller[];
-  middleAdmins: MiddleAdminOption[];
 }) {
   const [tab, setTab] = useState<"users" | "sellers">("users");
 
@@ -76,7 +69,7 @@ export default function AdminUsersTabsClient({
       {tab === "users" ? (
         <UserListClient users={users} />
       ) : (
-        <AdminSellersClient sellers={sellers} middleAdmins={middleAdmins} />
+        <AdminSellersClient sellers={sellers} />
       )}
     </div>
   );

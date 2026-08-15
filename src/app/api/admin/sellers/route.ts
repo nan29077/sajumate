@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// PUT: 상담사 마진 정책 수정 (소속 중간관리자 + 판매가 마진율)
+// PUT: 상담사 판매 수수료율 수정
 export async function PUT(request: Request) {
   const session = await auth();
   if (session?.user?.role !== "SUPER_ADMIN") {
@@ -11,7 +11,7 @@ export async function PUT(request: Request) {
 
   try {
     const body = await request.json();
-    const { sellerId, middleAdminId, middleAdminMarginRate, commissionRate } = body;
+    const { sellerId, commissionRate } = body;
 
     if (!sellerId) {
       return NextResponse.json({ error: "상담사 ID가 필요합니다." }, { status: 400 });
@@ -19,12 +19,6 @@ export async function PUT(request: Request) {
 
     // 값이 넘어온 필드만 부분 업데이트
     const data: Record<string, unknown> = {};
-    if (middleAdminId !== undefined) {
-      data.middleAdminId = middleAdminId || null;
-    }
-    if (middleAdminMarginRate !== undefined) {
-      data.middleAdminMarginRate = Number(middleAdminMarginRate) || 0;
-    }
     if (commissionRate !== undefined) {
       const c = Number(commissionRate);
       data.commissionRate = Number.isFinite(c) && c >= 0 && c <= 100 ? c : 0;

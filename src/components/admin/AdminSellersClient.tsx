@@ -20,15 +20,9 @@ export interface Seller {
   isApproved: boolean; isRecommended: boolean; totalFans: number;
   followersCount: number; shopProductsCount: number; ordersCount: number;
   commissionRate: number | null;
-  middleAdminId: string | null; middleAdminName: string | null; middleAdminMarginRate: number;
   createdAt: string;
   settlementAvailable: number;
   settlementScheduled: number;
-}
-
-interface MiddleAdminOption {
-  id: string;
-  name: string;
 }
 
 const won = (n: number) => Math.round(n).toLocaleString("ko-KR") + "원";
@@ -88,10 +82,8 @@ function ImpersonateButton({ userId, shopName }: { userId: string; shopName: str
 
 export default function AdminSellersClient({
   sellers,
-  middleAdmins,
 }: {
   sellers: Seller[];
-  middleAdmins: MiddleAdminOption[];
 }) {
   const router = useRouter();
   const { appConfirm, appAlert } = useAppDialog();
@@ -459,38 +451,8 @@ function SellerMarginPanel({
   const router = useRouter();
   const { appAlert } = useAppDialog();
 
-  const [saving, setSaving] = useState(false);
-  const [middleAdminId, setMiddleAdminId] = useState<string>(seller.middleAdminId || "");
-  const [rate, setRate] = useState<string>(String(seller.middleAdminMarginRate ?? 0));
-
   const [commSaving, setCommSaving] = useState(false);
   const [commRate, setCommRate] = useState<string>(String(seller.commissionRate ?? 5));
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const res = await fetch("/api/admin/sellers", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sellerId: seller.id,
-          middleAdminId: middleAdminId || null,
-          middleAdminMarginRate: Number(rate) || 0,
-        }),
-      });
-      if (res.ok) {
-        await appAlert({ message: "마진 정책이 저장되었습니다.", type: "success" });
-        router.refresh();
-      } else {
-        const data = await res.json();
-        await appAlert({ message: data.error || "저장 실패", type: "warning" });
-      }
-    } catch {
-      await appAlert({ message: "저장 오류", type: "warning" });
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handleCommSave = async () => {
     const numRate = Number(commRate);

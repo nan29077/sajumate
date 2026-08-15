@@ -14,11 +14,9 @@ export default async function AdminSellersPage() {
     getAdminSellers(),
   ]);
 
-  const serializedMiddleAdmins: { id: string; name: string }[] = [];
-
   return (
     <div className="animate-fade-in">
-      <AdminSellersClient sellers={serialized} middleAdmins={serializedMiddleAdmins} />
+      <AdminSellersClient sellers={serialized} />
     </div>
   );
 }

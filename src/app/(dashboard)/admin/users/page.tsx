@@ -51,13 +51,10 @@ export default async function AdminUsersPage() {
     authProviders: [...new Set(u.accounts.map((a) => a.provider))],
   }));
 
-  const serializedMiddleAdmins: { id: string; name: string }[] = [];
-
   return (
     <AdminUsersTabsClient
       users={users}
       sellers={sellers}
-      middleAdmins={serializedMiddleAdmins}
     />
   );
 }
