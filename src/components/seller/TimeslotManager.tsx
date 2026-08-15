@@ -390,8 +390,8 @@ function BulkCreateModal({
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [startHour, setStartHour] = useState(9);
   const [endHour, setEndHour] = useState(18);
-  const [intervalMinutes, setIntervalMinutes] = useState(60);
-  const [durationMinutes, setDurationMinutes] = useState(60);
+  const [intervalMinutes, setIntervalMinutes] = useState(30);
+  const [durationMinutes, setDurationMinutes] = useState(30);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 

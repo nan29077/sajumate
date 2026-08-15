@@ -8,6 +8,7 @@ import {
   getReservationConsultingInfo,
 } from "@/lib/consultingSession";
 import { notifyReservationConfirmedToCustomer } from "@/lib/alimtalkTriggers";
+import { parseVariantName, timeToMinutes } from "@/lib/consultOptions";
 
 export const dynamic = "force-dynamic";
 
@@ -83,16 +84,42 @@ export async function PATCH(
   else if (status === "CANCELLED") extraData.cancelledAt = now;
   else if (status === "NO_SHOW") extraData.noShowAt = now;
 
-  // 취소 시 슬롯 해제
+  // 취소 시 슬롯 해제. 변형(방식×시간) 예약이면 소요시간 구간 전체를, 레거시면 시작 슬롯만 되돌린다.
   if (status === "CANCELLED") {
     const slot = await prisma.timeSlot.findFirst({
       where: { reservationId: id },
     });
     if (slot) {
-      await prisma.timeSlot.update({
-        where: { id: slot.id },
-        data: { isAvailable: true, reservationId: null },
+      const item = await prisma.reservationItem.findFirst({
+        where: { reservationId: id },
+        select: { variantName: true },
       });
+      const minutes = item?.variantName ? parseVariantName(item.variantName).minutes : 0;
+      if (minutes > 0) {
+        const startMin = timeToMinutes(slot.startTime);
+        const windowEnd = startMin + minutes;
+        const closed = await prisma.timeSlot.findMany({
+          where: { consultantId: slot.consultantId, date: slot.date, isAvailable: false },
+          select: { id: true, startTime: true },
+        });
+        const toFree = closed
+          .filter((cs) => {
+            const st = timeToMinutes(cs.startTime);
+            return st >= startMin && st < windowEnd;
+          })
+          .map((cs) => cs.id);
+        if (toFree.length > 0) {
+          await prisma.timeSlot.updateMany({
+            where: { id: { in: toFree } },
+            data: { isAvailable: true, reservationId: null },
+          });
+        }
+      } else {
+        await prisma.timeSlot.update({
+          where: { id: slot.id },
+          data: { isAvailable: true, reservationId: null },
+        });
+      }
     }
   }
 

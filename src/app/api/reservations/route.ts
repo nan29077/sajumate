@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { safeQuery, isMissingSchemaError } from "@/lib/safeDb";
 import { generateOrderNumber } from "@/lib/utils";
+import { parseVariantName, slotsForWindow } from "@/lib/consultOptions";
 
 export const dynamic = "force-dynamic";
 
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
   const {
     sellerId,
     productId,
+    variantId,
     timeSlotId,
     reservationDate,
     reservationTime,
@@ -181,7 +183,19 @@ export async function POST(request: Request) {
         }
       }
 
-      const amount = Number(product.basePrice);
+      // 선택한 방식×시간 옵션(변형)이 있으면 그 가격/소요시간을 사용
+      let variant: { id: string; name: string; price: unknown } | null = null;
+      if (typeof variantId === "string" && variantId) {
+        variant = await tx.productVariant.findFirst({
+          where: { id: variantId, productId },
+          select: { id: true, name: true, price: true },
+        });
+        if (!variant) throw new Error("선택한 상담 옵션을 찾을 수 없습니다.");
+      }
+      const amount = Number(variant ? variant.price : product.basePrice);
+      const durationMinutes =
+        (variant ? parseVariantName(variant.name).minutes : 0) ||
+        Number((product as any).durationMinutes) || 30;
       const reservationNumber = generateOrderNumber();
 
       // 예약 생성
@@ -208,6 +222,8 @@ export async function POST(request: Request) {
             create: {
               itemType: "PRODUCT",
               productId,
+              variantId: variant?.id ?? null,
+              variantName: variant?.name ?? null,
               productName: product.name,
               price: amount,
               quantity: 1,
@@ -217,14 +233,30 @@ export async function POST(request: Request) {
         },
       });
 
-      // 슬롯 예약 연결 및 비활성화
-      await tx.timeSlot.update({
-        where: { id: timeSlotId },
-        data: {
-          isAvailable: false,
-          reservationId: reservation.id,
-        },
-      });
+      if (variant) {
+        // 변형(방식×시간) 예약: 선택한 소요시간만큼 연속 슬롯을 모두 차단(30분 격자 기준).
+        // 시작 슬롯에만 reservationId 를 연결(1:1 unique), 나머지 구간 슬롯은 isAvailable=false.
+        const daySlots = await tx.timeSlot.findMany({
+          where: { consultantId: sellerProfile.userId, date: slot.date, isAvailable: true },
+          select: { id: true, startTime: true, endTime: true },
+        });
+        const cover = slotsForWindow(daySlots, slot.startTime, durationMinutes);
+        if (!cover) throw new Error("NOT_ENOUGH_TIME");
+        await tx.timeSlot.updateMany({
+          where: { id: { in: cover.map((cs) => cs.id) } },
+          data: { isAvailable: false },
+        });
+        await tx.timeSlot.update({
+          where: { id: timeSlotId },
+          data: { reservationId: reservation.id },
+        });
+      } else {
+        // 레거시(단일 슬롯) 예약: 선택한 슬롯만 잠근다.
+        await tx.timeSlot.update({
+          where: { id: timeSlotId },
+          data: { isAvailable: false, reservationId: reservation.id },
+        });
+      }
 
       return reservation;
     });
@@ -234,6 +266,9 @@ export async function POST(request: Request) {
     const msg = err instanceof Error ? err.message : "예약 생성에 실패했습니다.";
     if (msg === "SLOT_TAKEN") {
       return NextResponse.json({ error: "이미 예약된 시간입니다. 다른 시간을 선택해 주세요." }, { status: 409 });
+    }
+    if (msg === "NOT_ENOUGH_TIME") {
+      return NextResponse.json({ error: "선택한 시작 시간에 상담 시간만큼 연속으로 비어 있는 시간이 부족합니다. 다른 시간을 선택해 주세요." }, { status: 409 });
     }
     if (msg === "LIVE_SLOTS_FULL") {
       return NextResponse.json(

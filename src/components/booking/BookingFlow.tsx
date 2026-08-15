@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Clock, User, Calendar, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
+import { parseVariantName, slotsForWindow } from "@/lib/consultOptions";
 
 interface Product {
   id: string;
@@ -16,6 +17,7 @@ interface Product {
   thumbnail: string | null;
   description: string | null;
   sellerPrice: number | null;
+  variants?: { id: string; name: string; price: number }[];
 }
 
 interface Seller {
@@ -29,7 +31,7 @@ interface Seller {
   consultantAvatar: string | null;
 }
 
-type Step = "product" | "date" | "time" | "info" | "confirm" | "pay" | "done";
+type Step = "product" | "option" | "date" | "time" | "info" | "confirm" | "pay" | "done";
 
 interface PayProvider {
   key: string;
@@ -56,6 +58,8 @@ export default function BookingFlow({
 }) {
   const [step, setStep] = useState<Step>("product");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<{ id: string; name: string; price: number; method: string; durationLabel: string; minutes: number } | null>(null);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -79,6 +83,14 @@ export default function BookingFlow({
   const [payLaunching, setPayLaunching] = useState<string | null>(null);
 
   const today = new Date().toISOString().slice(0, 10);
+
+  // 방식×시간 옵션 파생값
+  const parsedVariants = (selectedProduct?.variants ?? []).map((v) => ({ ...v, ...parseVariantName(v.name) }));
+  const methods: string[] = Array.from(new Set(parsedVariants.map((v) => v.method)));
+  const durationsForMethod = selectedMethod ? parsedVariants.filter((v) => v.method === selectedMethod) : [];
+  const effectiveMinutes = selectedVariant?.minutes ?? (selectedProduct?.durationMinutes ?? 0);
+  const effectivePrice = selectedVariant?.price ?? (selectedProduct ? (selectedProduct.sellerPrice ?? selectedProduct.basePrice) : 0);
+  const timeSlots = effectiveMinutes > 0 ? daySlots.filter((s) => slotsForWindow(daySlots, s.startTime, effectiveMinutes) !== null) : daySlots;
 
   // 월 슬롯 현황 로드
   const loadMonthSlots = async (year: number, month: number) => {
@@ -114,6 +126,19 @@ export default function BookingFlow({
 
   const handleProductSelect = (p: Product) => {
     setSelectedProduct(p);
+    setSelectedMethod(null);
+    setSelectedVariant(null);
+    if ((p.variants?.length ?? 0) > 0) {
+      setStep("option");
+    } else {
+      loadMonthSlots(currentYear, currentMonth);
+      setStep("date");
+    }
+  };
+
+  // 방식×시간 옵션(변형) 선택 → 날짜 단계로
+  const handleVariantSelect = (v: { id: string; name: string; price: number; method: string; durationLabel: string; minutes: number }) => {
+    setSelectedVariant(v);
     loadMonthSlots(currentYear, currentMonth);
     setStep("date");
   };
@@ -153,6 +178,7 @@ export default function BookingFlow({
       body: JSON.stringify({
         sellerId: seller.id,
         productId: selectedProduct.id,
+        variantId: selectedVariant?.id ?? null,
         timeSlotId: selectedSlot.id,
         reservationDate: selectedDate,
         reservationTime: selectedSlot.startTime,
@@ -299,7 +325,8 @@ export default function BookingFlow({
         {step !== "product" && (
           <button
             onClick={() => {
-              if (step === "date") setStep("product");
+              if (step === "option") setStep("product");
+              else if (step === "date") setStep(selectedProduct?.variants?.length ? "option" : "product");
               else if (step === "time") setStep("date");
               else if (step === "info") setStep("time");
               else if (step === "confirm") setStep("info");
@@ -313,6 +340,7 @@ export default function BookingFlow({
           <h1 className="text-base font-bold text-gray-900">{seller.shopName}</h1>
           <p className="text-xs text-gray-400">
             {step === "product" && "상담 상품 선택"}
+            {step === "option" && "상담 방식·시간 선택"}
             {step === "date" && "날짜 선택"}
             {step === "time" && "시간 선택"}
             {step === "info" && "신청자 정보"}
@@ -365,6 +393,49 @@ export default function BookingFlow({
                   </div>
                 </button>
               ))
+            )}
+          </div>
+        )}
+
+        {/* Step 1.5: 방식·시간 선택 */}
+        {step === "option" && selectedProduct && (
+          <div className="space-y-5">
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <p className="text-sm font-semibold text-gray-900">{selectedProduct.name}</p>
+              <p className="text-xs text-gray-400 mt-0.5">상담 방식과 시간을 선택하세요.</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">상담 방식</p>
+              <div className="flex flex-wrap gap-2">
+                {methods.map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => { setSelectedMethod(m); setSelectedVariant(null); }}
+                    className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${selectedMethod === m ? "bg-indigo-600 border-indigo-600 text-white" : "border-gray-200 text-gray-700 hover:border-indigo-400"}`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {selectedMethod && (
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-2">상담 시간</p>
+                <div className="space-y-2">
+                  {durationsForMethod.map((v) => (
+                    <button
+                      key={v.id}
+                      onClick={() => handleVariantSelect(v)}
+                      className="w-full flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-left hover:border-indigo-400 transition-colors"
+                    >
+                      <span className="flex items-center gap-2 text-sm font-medium text-gray-800">
+                        <Clock size={14} className="text-indigo-500" /> {v.durationLabel}
+                      </span>
+                      <span className="text-sm font-bold text-indigo-600">{formatPrice(v.price)}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -425,11 +496,11 @@ export default function BookingFlow({
             <p className="text-sm font-medium text-gray-700 mb-3">{selectedDate} 가능한 시간</p>
             {slotsLoading ? (
               <div className="text-center py-12 text-gray-400 text-sm">로딩 중...</div>
-            ) : daySlots.length === 0 ? (
+            ) : timeSlots.length === 0 ? (
               <div className="text-center py-12 text-gray-400 text-sm">가용한 시간이 없습니다.</div>
             ) : (
               <div className="grid grid-cols-3 gap-2">
-                {daySlots.map((slot) => (
+                {timeSlots.map((slot) => (
                   <button
                     key={slot.id}
                     onClick={() => {
@@ -538,17 +609,17 @@ export default function BookingFlow({
               <p className="font-semibold text-gray-900">예약 정보 확인</p>
               <Row label="상담사" value={seller.shopName} />
               <Row label="상담 상품" value={selectedProduct.name} />
-              {(selectedProduct.consultingType || selectedProduct.consultingMethod) && (
+              {(selectedProduct.consultingType || selectedVariant?.method || selectedProduct.consultingMethod) && (
                 <Row
-                  label="상담 유형"
-                  value={[selectedProduct.consultingType, selectedProduct.consultingMethod].filter(Boolean).join(" · ")}
+                  label="상담 방식"
+                  value={[selectedProduct.consultingType, selectedVariant?.method || selectedProduct.consultingMethod].filter(Boolean).join(" · ")}
                 />
               )}
-              {selectedProduct.durationMinutes != null && (
-                <Row label="상담 시간" value={`${selectedProduct.durationMinutes}분`} />
+              {(selectedVariant?.durationLabel || selectedProduct.durationMinutes != null) && (
+                <Row label="상담 시간" value={selectedVariant?.durationLabel || `${selectedProduct.durationMinutes}분`} />
               )}
               <Row label="예약 날짜" value={selectedDate} />
-              <Row label="예약 시간" value={`${selectedSlot.startTime} ~ ${selectedSlot.endTime}`} />
+              <Row label="예약 시간" value={selectedVariant ? `${selectedSlot.startTime} 부터 · ${effectiveMinutes}분` : `${selectedSlot.startTime} ~ ${selectedSlot.endTime}`} />
               <div className="border-t border-gray-100 pt-2">
                 <p className="font-semibold text-gray-900">신청자 정보</p>
               </div>
@@ -561,7 +632,7 @@ export default function BookingFlow({
               <div className="border-t border-gray-100 pt-2 flex justify-between">
                 <span className="font-semibold text-gray-700">결제 금액</span>
                 <span className="font-bold text-indigo-600 text-base">
-                  {formatPrice(selectedProduct.sellerPrice ?? selectedProduct.basePrice)}
+                  {formatPrice(effectivePrice)}
                 </span>
               </div>
             </div>

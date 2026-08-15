@@ -12,6 +12,11 @@ const BASE_PRODUCT_SELECT = {
   basePrice: true,
   thumbnail: true,
   description: true,
+  variants: {
+    where: { isActive: true },
+    orderBy: { sortOrder: "asc" as const },
+    select: { id: true, name: true, price: true },
+  },
 } as const;
 
 const CONSULTING_PRODUCT_SELECT = {
@@ -31,6 +36,7 @@ interface BookProduct {
   consultingType?: string;
   consultingMethod?: string;
   durationMinutes?: number;
+  variants?: { id: string; name: string; price: unknown }[];
 }
 
 function sellerQuery(productSelect: object) {
@@ -97,6 +103,7 @@ export default async function BookingPage({
       thumbnail: p.thumbnail,
       description: p.description,
       sellerPrice: sp.sellerPrice ? Number(sp.sellerPrice) : null,
+      variants: (p.variants ?? []).map((v) => ({ id: v.id, name: v.name, price: Number(v.price) })),
     };
   });
 
@@ -130,6 +137,7 @@ export default async function BookingPage({
         thumbnail: extra.thumbnail,
         description: extra.description,
         sellerPrice: null,
+        variants: (extra.variants ?? []).map((v) => ({ id: v.id, name: v.name, price: Number(v.price) })),
       });
     }
   }
