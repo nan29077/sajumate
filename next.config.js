@@ -33,6 +33,18 @@ const nextConfig = {
   // 이 앱은 output: "standalone" 을 쓰지 않으므로 트레이싱 결과물이 필요 없다.
   outputFileTracing: false,
   poweredByHeader: false,
+  async headers() {
+    return [
+      {
+        source: "/og-image.png",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=86400, s-maxage=604800, immutable" },
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+        ],
+      },
+    ];
+  },
   compress: true,
   reactStrictMode: false,
   experimental: {

@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 import SafeImage from "@/components/shared/SafeImage";
 import BrandWordmark from "@/components/shared/BrandWordmark";
+import {
+  SOCIAL_SHARE_IMAGE_PATH,
+  absolutePublicUrl,
+  resolveRequestOrigin,
+} from "@/lib/siteUrl";
 import { resolveSellerDisplayImage, DEFAULT_PRODUCT_IMAGE } from "@/lib/defaults";
 import { getShopCustomization } from "@/lib/shopCustomization";
 import { Clock, Video, CalendarCheck, Sparkles, ChevronRight } from "lucide-react";
@@ -94,18 +99,31 @@ export async function generateMetadata({
   const title = `${seller.shopName}의 점집 - 사주메이트`;
   const description =
     custom.tagline || seller.shopDescription || `${seller.shopName}에게 지금 상담을 예약하세요.`;
-  const image = seller.shopBanner || "/opengraph-image";
+  const origin = resolveRequestOrigin();
+  const pageUrl = absolutePublicUrl(`/c/${slug}`, origin);
+  const image = absolutePublicUrl(SOCIAL_SHARE_IMAGE_PATH, origin);
 
   return {
+    metadataBase: new URL(origin),
     title,
     description,
+    alternates: { canonical: pageUrl },
     openGraph: {
       title,
       description,
-      url: `/c/${slug}`,
+      url: pageUrl,
       siteName: "사주메이트",
       type: "profile",
-      images: [{ url: image, width: 1200, height: 630, alt: `${seller.shopName}의 점집` }],
+      images: [
+        {
+          url: image,
+          secureUrl: image,
+          type: "image/png",
+          width: 1200,
+          height: 630,
+          alt: `${seller.shopName}의 점집 - 사주메이트`,
+        },
+      ],
     },
     twitter: { card: "summary_large_image", title, description, images: [image] },
   };

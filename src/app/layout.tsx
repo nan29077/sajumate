@@ -1,33 +1,18 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
-import { headers } from "next/headers";
 import "./globals.css";
 import Providers from "@/components/shared/Providers";
 import NavigationProgress from "@/components/shared/NavigationProgress";
 import { getFeatureFlags } from "@/lib/settings";
 import ThemeEffect from "@/components/shared/ThemeEffect";
 import { prisma } from "@/lib/prisma";
+import {
+  SOCIAL_SHARE_IMAGE_PATH,
+  absolutePublicUrl,
+  resolveRequestOrigin,
+} from "@/lib/siteUrl";
 
 export const dynamic = "force-dynamic";
-
-// 실제 접속한 도메인(클라우드플레어 터널 등)을 요청 헤더에서 읽어 og:image / og:url 의
-// 절대 URL 을 만든다. 터널 URL 이 바뀌어도 .env 수정·재시작 없이 자동으로 맞춰지고,
-// localhost 가 카드에 박히는 문제를 막는다. 헤더가 없으면 NEXT_PUBLIC_APP_URL 로 폴백.
-function resolveBaseUrl(): string {
-  try {
-    const h = headers();
-    const host = h.get("x-forwarded-host") || h.get("host");
-    if (host) {
-      const proto =
-        h.get("x-forwarded-proto") ||
-        (host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https");
-      return `${proto}://${host}`;
-    }
-  } catch {
-    // 정적 렌더링 등 헤더를 못 읽는 상황에서는 아래 환경변수로 폴백한다.
-  }
-  return process.env.NEXT_PUBLIC_APP_URL || "https://sajumate.co.kr";
-}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -60,29 +45,42 @@ const baseMetadata: Metadata = {
     siteName: "사주메이트",
     locale: "ko_KR",
     type: "website",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "사주메이트 - 라이브 점사 예약 플랫폼",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "사주메이트 - 라이브 점사 예약 플랫폼",
     description:
       "방송하는 동안 예약이 알아서 들어옵니다. 유튜브·SNS 사주·신점·타로 상담사를 위한 예약 커머스",
-    images: ["/og-image.png"],
   },
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  // 요청한 도메인을 기준으로 절대 URL 을 다시 계산한다(카톡·SNS 카드 이미지용).
+  // metadataBase만 바꾸면 Next가 상대 이미지 URL을 이전 환경값으로 먼저 확정할 수 있다.
+  // 카카오 크롤러가 localhost/만료된 터널을 보지 않도록 URL과 이미지를 모두 절대 주소로 넣는다.
+  const origin = resolveRequestOrigin();
+  const shareImageUrl = absolutePublicUrl(SOCIAL_SHARE_IMAGE_PATH, origin);
   const resolvedMetadata: Metadata = {
     ...baseMetadata,
-    metadataBase: new URL(resolveBaseUrl()),
+    metadataBase: new URL(origin),
+    alternates: { canonical: origin },
+    openGraph: {
+      ...baseMetadata.openGraph,
+      url: origin,
+      images: [
+        {
+          url: shareImageUrl,
+          secureUrl: shareImageUrl,
+          type: "image/png",
+          width: 1200,
+          height: 630,
+          alt: "사주메이트 - 라이브 점사 예약 플랫폼",
+        },
+      ],
+    },
+    twitter: {
+      ...baseMetadata.twitter,
+      images: [shareImageUrl],
+    },
   };
 
   let customFavicon = "";
