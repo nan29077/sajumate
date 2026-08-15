@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 개발 서버의 .next 잠금과 충돌하지 않도록 검증 빌드에서만 별도 출력 경로를 허용한다.
+  distDir: process.env.NEXT_AUDIT_DIST_DIR || ".next",
   webpack: (config, { dev }) => {
     if (dev) {
       config.cache = false;

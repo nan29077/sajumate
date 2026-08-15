@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { X, Mail, Bot, User, Coffee, Loader2 } from 'lucide-react';
 
-const DETAIL_PATHS = [/^\/products\/[^/]+$/, /^\/campaigns\/[^/]+$/, /^\/cart$/];
+const DETAIL_PATHS = [/^\/products\/[^/]+$/, /^\/cart$/];
 
 const DEFAULT_FAQ_DATA = [
   { q: "상담 방식은 얼마나 걸리나요?", a: "일반 상담 방식은 결제 완료 후 2~5일 이내에 진행됩니다." },

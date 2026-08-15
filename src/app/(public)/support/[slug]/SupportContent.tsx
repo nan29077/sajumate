@@ -151,8 +151,8 @@ const CONTENT: Record<string, { title: string; body: () => React.ReactNode }> = 
           <p className="text-[13px] text-gray-600 leading-relaxed">마이페이지 &gt; 예약내역에서 직접 취소하거나 1대1 문의로 접수해 주세요. 상담 시작 전에는 전액 환불이 원칙이며, 상담 임박 시점(24시간 이내)에는 환불이 제한될 수 있습니다.</p>
         </Card>
         <Card>
-          <SectionHeading>그룹 상담 캠페인 환불</SectionHeading>
-          <p className="text-[13px] text-gray-600 leading-relaxed">그룹 상담 캠페인 종료 후 목표 달성 실패 시 전액 자동 환불됩니다. 목표 달성 후에는 개별 상담상품의 취소·환불 정책이 적용됩니다.</p>
+          <SectionHeading>상담 예약 취소와 환불</SectionHeading>
+          <p className="text-[13px] text-gray-600 leading-relaxed">상담 시작 전에는 상담사별 취소 가능 시간과 환불 정책을 확인해 주세요. 결제 취소가 승인되면 이용한 결제수단으로 환불됩니다.</p>
         </Card>
         <Card>
           <SectionHeading>환불 처리 기간</SectionHeading>
@@ -227,7 +227,7 @@ const CONTENT: Record<string, { title: string; body: () => React.ReactNode }> = 
         </Card>
         <Card>
           <SectionHeading>상담료 수익</SectionHeading>
-          <p className="text-[13px] text-gray-600 leading-relaxed">고객이 상담을 예약·결제할 때마다 설정된 상담료에서 플랫폼 수수료를 제한 금액이 수익으로 발생합니다. 캠페인 종료 후 확정 시점에 정산됩니다.</p>
+          <p className="text-[13px] text-gray-600 leading-relaxed">고객이 상담을 예약·결제하면 상담료에서 플랫폼 수수료를 제한 금액이 수익으로 발생합니다. 상담 완료와 취소 가능 기간 확인 후 정산 가능 금액으로 전환됩니다.</p>
         </Card>
         <a href="/seller-apply"
           className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 transition-colors shadow-md shadow-amber-200 mt-2">

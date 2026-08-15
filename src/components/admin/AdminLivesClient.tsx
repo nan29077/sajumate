@@ -72,15 +72,18 @@ export default function AdminLivesClient() {
   }, [load]);
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-          <Radio size={20} className="text-red-500" /> 라이브 관리
-          <span className="text-sm font-normal text-gray-400">총 {total}건</span>
-        </h1>
+    <div className="dashboard-page">
+      <div className="dashboard-page-header flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <span className="dashboard-icon-tile text-red-500 bg-red-50 ring-red-100"><Radio size={19} /></span>
+          <div>
+            <h1 className="text-lg font-bold text-brand-950">라이브 상담 관리</h1>
+            <p className="text-xs text-gray-500 mt-0.5">방송 상태와 실시간 예약을 확인합니다 · 총 {total}건</p>
+          </div>
+        </div>
         <button
           onClick={load}
-          className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50"
+          className="dashboard-action"
         >
           <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
           새로고침
@@ -88,7 +91,7 @@ export default function AdminLivesClient() {
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
           {STATUS_TABS.map((t) => (
             <button
               key={t.key}
@@ -96,10 +99,10 @@ export default function AdminLivesClient() {
                 setPage(1);
                 setStatus(t.key);
               }}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              className={`dashboard-tab whitespace-nowrap ${
                 status === t.key
-                  ? "bg-gray-900 text-white"
-                  : "bg-white border border-gray-200 text-gray-600 hover:border-gray-400"
+                  ? "dashboard-tab-active"
+                  : ""
               }`}
             >
               {t.label}
@@ -112,7 +115,7 @@ export default function AdminLivesClient() {
             setPage(1);
             setSellerFilter(e.target.value);
           }}
-          className="border border-gray-200 rounded-lg px-2.5 py-2 text-xs text-gray-600"
+          className="input-field w-full sm:w-auto py-2 text-xs text-gray-600"
         >
           <option value="">전체 점집</option>
           {sellers.map((s) => (
@@ -124,11 +127,46 @@ export default function AdminLivesClient() {
       </div>
 
       {loading && rows.length === 0 ? (
-        <div className="py-16 text-center text-sm text-gray-400">불러오는 중...</div>
+        <div className="dashboard-empty dashboard-panel">불러오는 중...</div>
       ) : rows.length === 0 ? (
-        <div className="py-16 text-center text-sm text-gray-400">라이브가 없습니다.</div>
+        <div className="dashboard-empty dashboard-panel">
+          <Radio size={30} className="mb-2 text-brand-200" />
+          라이브 상담이 없습니다.
+        </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+        <>
+        <div className="grid gap-3 md:hidden">
+          {rows.map((row) => {
+            const badge = STATUS_BADGE[row.status];
+            const when = row.startedAt || row.scheduledAt;
+            return (
+              <Link key={row.id} href={`/admin/lives/${row.id}`} className="dashboard-panel p-4 transition-colors hover:border-brand-200">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${badge.cls}`}>
+                        {row.status === "LIVE" && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+                        {badge.label}
+                      </span>
+                      <span className="text-[10px] text-gray-400">{row.platform || "라이브"}</span>
+                    </div>
+                    <p className="mt-2 truncate text-sm font-bold text-brand-950">{row.title}</p>
+                    <p className="mt-1 text-xs text-gray-500">{row.shopName} · {row.consultantName || "상담사"}</p>
+                  </div>
+                  <div className="flex-none rounded-xl bg-brand-50 px-3 py-2 text-right ring-1 ring-inset ring-brand-100">
+                    <p className="text-sm font-black text-brand-700">{row.reservations.total}건</p>
+                    <p className="text-[9px] font-medium text-brand-400">예약</p>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center justify-between border-t border-brand-50 pt-3 text-[11px] text-gray-400">
+                  <span>{when ? new Date(when).toLocaleString("ko-KR", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "일정 미정"}</span>
+                  <span>현재 {row.viewerCount}명 · 최고 {row.peakViewerCount}명</span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+        <div className="dashboard-panel hidden overflow-x-auto md:block">
           <table className="w-full text-xs min-w-[860px]">
             <thead>
               <tr className="border-b border-gray-100 text-gray-400 text-left">
@@ -160,7 +198,7 @@ export default function AdminLivesClient() {
                     <td className="px-4 py-3">
                       <Link
                         href={`/admin/lives/${row.id}`}
-                        className="font-medium text-gray-800 hover:underline"
+                        className="font-semibold text-brand-950 hover:text-brand-600"
                       >
                         {row.title}
                       </Link>
@@ -184,7 +222,7 @@ export default function AdminLivesClient() {
                       <span className="text-[10px] text-gray-300"> / 최고 {row.peakViewerCount}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <span className="inline-flex items-center gap-1 font-semibold text-indigo-600">
+                      <span className="inline-flex items-center gap-1 font-semibold text-brand-600">
                         <Calendar size={11} />
                         {row.reservations.total}건
                       </span>
@@ -205,6 +243,7 @@ export default function AdminLivesClient() {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {totalPages > 1 && (
@@ -212,7 +251,7 @@ export default function AdminLivesClient() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="p-1.5 border border-gray-200 rounded-lg disabled:opacity-30"
+            className="dashboard-action min-h-9 px-2 disabled:opacity-30"
           >
             <ChevronLeft size={14} />
           </button>
@@ -222,7 +261,7 @@ export default function AdminLivesClient() {
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
-            className="p-1.5 border border-gray-200 rounded-lg disabled:opacity-30"
+            className="dashboard-action min-h-9 px-2 disabled:opacity-30"
           >
             <ChevronRight size={14} />
           </button>

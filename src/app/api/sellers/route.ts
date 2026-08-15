@@ -17,7 +17,7 @@ export async function GET(request: Request) {
       where,
       include: {
         user: { select: { name: true, avatar: true } },
-        _count: { select: { campaigns: true, shopProducts: true, fans: true, followers: true } },
+        _count: { select: { shopProducts: true, fans: true, followers: true } },
       },
       orderBy: { totalFans: "desc" },
       skip: (page - 1) * limit,

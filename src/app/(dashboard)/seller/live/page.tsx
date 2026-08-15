@@ -625,14 +625,15 @@ export default function SellerLivePage() {
   const liveCount = activeLives.length + scheduledLives.length;
 
   return (
-    <div className="animate-fade-in">
+    <div className="dashboard-page">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Icon name="Live" size={20} className="text-red-500" /> 라이브 상담
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">총 {lives.length}개의 라이브 · 진행/예정 {liveCount}개</p>
+      <div className="dashboard-page-header flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="dashboard-icon-tile bg-red-50 text-red-500 ring-red-100"><Icon name="Live" size={19} /></span>
+          <div>
+          <h1 className="text-xl font-bold text-brand-950">라이브 상담</h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">방송과 실시간 상담을 관리합니다 · 전체 {lives.length}개 · 진행/예정 {liveCount}개</p>
+          </div>
         </div>
         <button onClick={openCreate} className="btn-primary text-sm flex items-center gap-1.5 !px-4 !py-2.5">
           <Icon name="Plus" size={16} /> 새 라이브
@@ -640,18 +641,18 @@ export default function SellerLivePage() {
       </div>
 
       {/* Tab: Live / VOD / AI Bot / Site Settings */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-5 overflow-x-auto no-scrollbar">
-        <button onClick={() => setActiveTab("live")} className={`flex-1 flex-shrink-0 whitespace-nowrap px-3 py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${activeTab === "live" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
+      <div className="flex gap-1.5 bg-brand-50/70 p-1.5 rounded-2xl overflow-x-auto no-scrollbar border border-brand-100">
+        <button onClick={() => setActiveTab("live")} className={`flex-1 flex-shrink-0 whitespace-nowrap px-3 py-2 text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-1.5 ${activeTab === "live" ? "bg-brand-600 text-white shadow-sm" : "text-gray-500 hover:bg-white"}`}>
           <Radio size={14} className="flex-shrink-0" /> 라이브/예정 ({activeLives.length + scheduledLives.length})
         </button>
-        <button onClick={() => setActiveTab("vod")} className={`flex-1 flex-shrink-0 whitespace-nowrap px-3 py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${activeTab === "vod" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
+        <button onClick={() => setActiveTab("vod")} className={`flex-1 flex-shrink-0 whitespace-nowrap px-3 py-2 text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-1.5 ${activeTab === "vod" ? "bg-brand-600 text-white shadow-sm" : "text-gray-500 hover:bg-white"}`}>
           <Clock size={14} className="flex-shrink-0" /> 지난 방송 ({endedLives.length})
         </button>
-        <button onClick={() => setActiveTab("bot")} className={`flex-1 flex-shrink-0 whitespace-nowrap px-3 py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${activeTab === "bot" ? "bg-white text-amber-600 shadow-sm" : "text-gray-500"}`}>
+        <button onClick={() => setActiveTab("bot")} className={`flex-1 flex-shrink-0 whitespace-nowrap px-3 py-2 text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-1.5 ${activeTab === "bot" ? "bg-brand-600 text-white shadow-sm" : "text-gray-500 hover:bg-white"}`}>
           <Bot size={14} className="flex-shrink-0" /> 유튜브AI챗봇
           {botEnabled && <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse flex-shrink-0" />}
         </button>
-        <button onClick={() => setActiveTab("settings")} className={`flex-1 flex-shrink-0 whitespace-nowrap px-3 py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${activeTab === "settings" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
+        <button onClick={() => setActiveTab("settings")} className={`flex-1 flex-shrink-0 whitespace-nowrap px-3 py-2 text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-1.5 ${activeTab === "settings" ? "bg-brand-600 text-white shadow-sm" : "text-gray-500 hover:bg-white"}`}>
           <Settings size={14} className="flex-shrink-0" /> 라이브 사이트 설정
         </button>
       </div>
@@ -724,7 +725,7 @@ export default function SellerLivePage() {
                 </Section>
               )}
               {activeLives.length === 0 && scheduledLives.length === 0 && (
-                <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
+                <div className="dashboard-empty dashboard-panel">
                   <Icon name="Live" size={40} className="mx-auto text-gray-200 mb-3" />
                   <p className="text-sm text-gray-500">진행 중이거나 예정된 라이브가 없습니다.</p>
                   <button onClick={openCreate} className="mt-3 text-sm text-brand-600 font-medium">+ 새 라이브 만들기</button>
@@ -744,7 +745,7 @@ export default function SellerLivePage() {
                   <Pagination currentPage={endedLivesPg.page} totalPages={endedLivesPg.totalPages} onPageChange={endedLivesPg.setPage} />
                 </div>
               ) : (
-                <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
+                <div className="dashboard-empty dashboard-panel">
                   <MonitorPlay size={40} className="mx-auto text-gray-200 mb-3" />
                   <p className="text-sm text-gray-500">아직 지난 방송이 없습니다.</p>
                 </div>

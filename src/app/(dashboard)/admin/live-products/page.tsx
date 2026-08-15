@@ -1,221 +1,128 @@
 "use client";
 
-import { Icon } from '@/components/shared/Icon';
-import { useState, useEffect, useCallback } from "react";
-import { NO_IMAGE } from "@/lib/defaults";
-import { Video, Eye, X, Loader2, Tag } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Loader2, Radio, X } from "lucide-react";
+import { Icon } from "@/components/shared/Icon";
 import SafeImage from "@/components/shared/SafeImage";
 import Pagination, { usePagination } from "@/components/shared/Pagination";
+import { NO_IMAGE } from "@/lib/defaults";
 
-interface ProductItem {
+type ProductItem = {
   id: string;
   name: string;
   thumbnail: string | null;
   basePrice: number;
-  brandName: string | null;
   categoryName: string | null;
-  allowGroupBuy: boolean;
   allowLiveCommerce: boolean;
-}
+};
 
 export default function AdminLiveProductsPage() {
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "live" | "groupbuy">("all");
+  const [onlyEnabled, setOnlyEnabled] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchProducts = useCallback(async () => {
     try {
-      const res = await fetch("/api/products/register?mode=admin-manage");
-      const data = await res.json();
-      if (data.products) {
-        setProducts(data.products.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          thumbnail: p.thumbnail,
-          basePrice: Number(p.basePrice),
-          brandName: p.brand?.brandName || p.brandName || null,
-          categoryName: p.category?.name || p.categoryName || null,
-          allowGroupBuy: p.allowGroupBuy ?? true,
-          allowLiveCommerce: p.allowLiveCommerce ?? false,
-        })));
-      }
-    } catch { }
-    finally { setLoading(false); }
+      const response = await fetch("/api/products/register?mode=admin-manage");
+      const data = await response.json();
+      setProducts(
+        (data.products ?? []).map((product: any) => ({
+          id: product.id,
+          name: product.name,
+          thumbnail: product.thumbnail,
+          basePrice: Number(product.basePrice),
+          categoryName: product.category?.name || product.categoryName || null,
+          allowLiveCommerce: product.allowLiveCommerce ?? false,
+        })),
+      );
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { fetchProducts(); }, [fetchProducts]);
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
-  const toggleFlag = async (productId: string, action: string) => {
-    setActionLoading(productId + action);
+  const toggleLive = async (product: ProductItem) => {
+    const action = product.allowLiveCommerce ? "disableLiveCommerce" : "enableLiveCommerce";
+    setActionLoading(product.id);
     try {
-      const res = await fetch("/api/products/manage", {
+      const response = await fetch("/api/products/manage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, action }),
+        body: JSON.stringify({ productId: product.id, action }),
       });
-      if (res.ok) {
-        // Update local state
-        setProducts(prev => prev.map(p => {
-          if (p.id !== productId) return p;
-          if (action === "enableLiveCommerce") return { ...p, allowLiveCommerce: true };
-          if (action === "disableLiveCommerce") return { ...p, allowLiveCommerce: false };
-          if (action === "enableGroupBuy") return { ...p, allowGroupBuy: true };
-          if (action === "disableGroupBuy") return { ...p, allowGroupBuy: false };
-          return p;
-        }));
+      if (response.ok) {
+        setProducts((current) =>
+          current.map((item) =>
+            item.id === product.id ? { ...item, allowLiveCommerce: !item.allowLiveCommerce } : item,
+          ),
+        );
       }
-    } catch { }
-    finally { setActionLoading(null); }
+    } finally {
+      setActionLoading(null);
+    }
   };
 
-  const filtered = products.filter(p => {
-    if (search) {
-      const q = search.toLowerCase();
-      if (!p.name.toLowerCase().includes(q) && !(p.brandName || "").toLowerCase().includes(q)) return false;
-    }
-    if (filter === "live") return p.allowLiveCommerce;
-    if (filter === "groupbuy") return p.allowGroupBuy;
-    return true;
-  });
+  const filtered = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+    return products.filter((product) => {
+      if (onlyEnabled && !product.allowLiveCommerce) return false;
+      return !keyword || product.name.toLowerCase().includes(keyword) || product.categoryName?.toLowerCase().includes(keyword);
+    });
+  }, [onlyEnabled, products, search]);
 
   const { pageItems, page, setPage, totalPages } = usePagination(filtered, 20);
+  const enabledCount = products.filter((product) => product.allowLiveCommerce).length;
 
-  const liveCount = products.filter(p => p.allowLiveCommerce).length;
-  const groupBuyCount = products.filter(p => p.allowGroupBuy).length;
-
-  if (loading) return (
-    <div className="flex items-center justify-center py-20">
-      <Loader2 size={24} className="animate-spin text-gray-300" />
-    </div>
-  );
+  if (loading) {
+    return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-brand-400" size={26} /></div>;
+  }
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-          <Icon name="Live" size={20} className="text-red-500" /> 라이브 상담 / 단체 상담 상담상품관리
-        </h1>
-        <p className="text-sm text-gray-500 mt-0.5">상담상품별 단체 상담/라이브 상담 판매 허용 여부를 설정합니다.</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 min-[430px]:grid-cols-3 gap-2 sm:gap-3 mb-5">
-        <div className="bg-white rounded-xl border border-gray-100 p-3 sm:p-4">
-          <Icon name="Package" size={16} className="text-gray-400 mb-1" />
-          <p className="text-lg font-bold">{products.length}</p>
-          <p className="text-[10px] text-gray-400">전체 상담상품</p>
-        </div>
-        <div className="bg-white rounded-xl border border-red-100 p-3 sm:p-4">
-          <Icon name="Live" size={16} className="text-red-500 mb-1" />
-          <p className="text-lg font-bold text-red-600">{liveCount}</p>
-          <p className="text-[10px] text-gray-400">라이브 상담 등록</p>
-        </div>
-        <div className="bg-white rounded-xl border border-emerald-100 p-3 sm:p-4">
-          <Icon name="Cart" size={16} className="text-emerald-500 mb-1" />
-          <p className="text-lg font-bold text-emerald-600">{groupBuyCount}</p>
-          <p className="text-[10px] text-gray-400">단체 상담 등록</p>
+    <div className="dashboard-page animate-fade-in">
+      <div className="dashboard-page-header">
+        <div>
+          <h1 className="dashboard-page-title"><Radio size={21} /> 라이브 상담상품 관리</h1>
+          <p className="dashboard-page-description">라이브 방송에서 소개할 상담상품을 설정합니다.</p>
         </div>
       </div>
 
-      {/* Search & Filter */}
-      <div className="flex flex-col sm:flex-row gap-2 mb-4">
-        <div className="flex-1 relative">
-          <Icon name="Search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="상담상품명 또는 브랜드 검색"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none"
-          />
-        </div>
-        <div className="flex gap-1 overflow-x-auto scrollbar-hide">
-          {[
-            { id: "all" as const, label: "전체" },
-            { id: "live" as const, label: "라이브" },
-            { id: "groupbuy" as const, label: "단체 상담" },
-          ].map(f => (
-            <button
-              key={f.id}
-              onClick={() => setFilter(f.id)}
-              className={`px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
-                filter === f.id
-                  ? "bg-indigo-50 border-indigo-200 text-indigo-600"
-                  : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="dashboard-stat-card"><Icon name="Package" size={18} /><strong>{products.length}</strong><span>전체 상담상품</span></div>
+        <div className="dashboard-stat-card"><Radio size={18} /><strong>{enabledCount}</strong><span>라이브 사용</span></div>
       </div>
 
-      {/* Product List */}
+      <div className="dashboard-toolbar">
+        <div className="relative flex-1">
+          <Icon name="Search" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="상담상품명 또는 분야 검색" className="dashboard-search-input" />
+        </div>
+        <button type="button" onClick={() => setOnlyEnabled((value) => !value)} className={onlyEnabled ? "dashboard-filter-button dashboard-filter-button-active" : "dashboard-filter-button"}>
+          라이브 사용 중
+        </button>
+      </div>
+
       <div className="space-y-2">
-        {pageItems.map(product => (
-          <div key={product.id} className="bg-white rounded-xl border border-gray-100 p-3 flex flex-wrap sm:flex-nowrap items-center gap-3">
-            <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-50">
-              <SafeImage src={product.thumbnail} placeholder={NO_IMAGE} alt={product.name} width={56} height={56} fallbackText={product.name} className="w-full h-full object-cover" />
+        {pageItems.map((product) => (
+          <div key={product.id} className="dashboard-list-card flex items-center gap-3">
+            <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-xl bg-brand-50">
+              <SafeImage src={product.thumbnail} placeholder={NO_IMAGE} alt={product.name} width={56} height={56} fallbackText={product.name} className="h-full w-full object-cover" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-              <div className="flex items-center gap-2 mt-0.5">
-                {product.brandName && <span className="text-[10px] text-gray-400">{product.brandName}</span>}
-                <span className="text-[11px] font-medium text-gray-600">{product.basePrice.toLocaleString()}원</span>
-              </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-gray-900">{product.name}</p>
+              <p className="mt-0.5 text-xs text-gray-400">{product.categoryName || "상담"} · {product.basePrice.toLocaleString()}원</p>
             </div>
-            <div className="flex items-center gap-1.5 w-full sm:w-auto flex-shrink-0">
-              {/* 단체 상담 토글 */}
-              <button
-                onClick={() => toggleFlag(product.id, product.allowGroupBuy ? "disableGroupBuy" : "enableGroupBuy")}
-                disabled={actionLoading === product.id + (product.allowGroupBuy ? "disableGroupBuy" : "enableGroupBuy")}
-                className={`flex flex-1 sm:flex-none items-center justify-center gap-1 px-2.5 py-2 sm:py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
-                  product.allowGroupBuy
-                    ? "bg-emerald-50 border-emerald-200 text-emerald-600"
-                    : "bg-gray-50 border-gray-200 text-gray-400"
-                }`}
-              >
-                {actionLoading?.startsWith(product.id) && actionLoading.includes("GroupBuy") ? (
-                  <Loader2 size={10} className="animate-spin" />
-                ) : product.allowGroupBuy ? (
-                  <Icon name="Check" size={10} />
-                ) : (
-                  <X size={10} />
-                )}
-                단체 상담
-              </button>
-              {/* 라이브 상담 토글 */}
-              <button
-                onClick={() => toggleFlag(product.id, product.allowLiveCommerce ? "disableLiveCommerce" : "enableLiveCommerce")}
-                disabled={actionLoading === product.id + (product.allowLiveCommerce ? "disableLiveCommerce" : "enableLiveCommerce")}
-                className={`flex flex-1 sm:flex-none items-center justify-center gap-1 px-2.5 py-2 sm:py-1.5 rounded-lg text-[10px] font-bold border transition-all ${
-                  product.allowLiveCommerce
-                    ? "bg-red-50 border-red-200 text-red-600"
-                    : "bg-gray-50 border-gray-200 text-gray-400"
-                }`}
-              >
-                {actionLoading?.startsWith(product.id) && actionLoading.includes("LiveCommerce") ? (
-                  <Loader2 size={10} className="animate-spin" />
-                ) : product.allowLiveCommerce ? (
-                  <Icon name="Live" size={10} />
-                ) : (
-                  <X size={10} />
-                )}
-                라이브
-              </button>
-            </div>
+            <button type="button" disabled={actionLoading === product.id} onClick={() => toggleLive(product)} className={product.allowLiveCommerce ? "dashboard-toggle-button dashboard-toggle-button-active" : "dashboard-toggle-button"}>
+              {actionLoading === product.id ? <Loader2 size={13} className="animate-spin" /> : product.allowLiveCommerce ? <Radio size={13} /> : <X size={13} />}
+              {product.allowLiveCommerce ? "사용 중" : "사용 안 함"}
+            </button>
           </div>
         ))}
-        {filtered.length === 0 && (
-          <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
-            <Icon name="Package" size={36} className="mx-auto text-gray-200 mb-3" />
-            <p className="text-sm text-gray-400">조건에 맞는 상담상품이 없습니다</p>
-
-          <p className="text-sm text-gray-400">조건에 맞는 상담상품이 없습니다</p>
-          </div>
-        )}
+        {filtered.length === 0 && <div className="dashboard-empty-state"><Radio size={34} /><p>조건에 맞는 상담상품이 없습니다.</p></div>}
       </div>
       <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
     </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { X, Settings, Calendar, Heart, Star, Bell, LogOut, ChevronRight, MapPin, Gift, Ticket, Sparkles, Users, Building2 } from "lucide-react";
+import { X, Settings, Calendar, Heart, Star, Bell, LogOut, ChevronRight, MapPin, Gift, Ticket, Users, Building2 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { pickBuyerAvatar } from "@/lib/defaults";
 
@@ -54,12 +54,6 @@ interface MyOverviewData {
   }>;
   gameCouponCount: number;
   sellerApplied: boolean;
-  referredSeller: {
-    shopName: string;
-    slug: string;
-    referralDiscountRate: number;
-  } | null;
-  flags: { referral: boolean };
 }
 
 const ORDER_STATUS_LABEL: Record<string, string> = {
@@ -243,34 +237,6 @@ export default function WatchMyPageSheet({ open, onClose }: Props) {
                   </Link>
                 </div>
               </div>
-
-              {/* ─── 할인 혜택 (추천인) ─── */}
-              {data.flags.referral && data.referredSeller && Number(data.referredSeller.referralDiscountRate) > 0 && (
-                <div className="px-4 mb-4">
-                  <div className="bg-amber-900/20 rounded-xl border border-amber-800/30 p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Gift size={14} className="text-amber-400" />
-                      <p className="text-xs font-bold text-gray-200">나의 할인 혜택</p>
-                    </div>
-                    <Link
-                      href={`/shop/${data.referredSeller.slug}`}
-                      onClick={onClose}
-                      className="flex items-center justify-between bg-black/30 rounded-lg px-3 py-2.5"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Sparkles size={13} className="text-amber-400" />
-                        <div>
-                          <p className="text-xs font-medium text-gray-200">{data.referredSeller.shopName}</p>
-                          <p className="text-[10px] text-gray-500">추천인 할인</p>
-                        </div>
-                      </div>
-                      <span className="text-sm font-bold text-amber-400">
-                        {data.referredSeller.referralDiscountRate}% OFF
-                      </span>
-                    </Link>
-                  </div>
-                </div>
-              )}
 
               {/* ─── 단골 상담사 미리보기 ─── */}
               {data.pickedSellers.length > 0 && (

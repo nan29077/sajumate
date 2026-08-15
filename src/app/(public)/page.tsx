@@ -16,7 +16,7 @@ import { DEFAULT_PRODUCT_IMAGE, pickSajuAvatar } from "@/lib/defaults";
 import { LIVE_RING_CLASS, OnAirBadge } from "@/components/shared/LiveBadge";
 import { getFeatureFlags } from "@/lib/settings";
 import { getHomeStats, getHomeStories, getHomeBenefits } from "@/lib/siteContent";
-import { Heart, Radio, Sparkles, ShieldCheck, Gift, Award, Quote, Instagram, Youtube, CreditCard, Smartphone, Landmark, ArrowRight, LogIn } from 'lucide-react';
+import { Heart, Radio, Sparkles, ShieldCheck, Gift, Award, Quote, Instagram, Youtube, CreditCard, Smartphone, Landmark, ArrowRight, LogIn, Bot, UserRoundCheck, FileText } from 'lucide-react';
 
 export const dynamic = "force-dynamic";
 
@@ -203,7 +203,7 @@ export default async function HomePage({
   const [homeStats, homeStories, homeBenefits] = await Promise.all([getHomeStats(), getHomeStories(), getHomeBenefits()]);
 
   // 최고관리자 배너 관리에서 등록한 상단 배너(최대 3개, 슬라이드) + 하단 배너
-  const [heroBannersRaw, bottomBannerRaw, activeCampaignCount] = await Promise.all([
+  const [heroBannersRaw, bottomBannerRaw] = await Promise.all([
     prisma.banner.findMany({
       where: { isActive: true, position: "hero" },
       orderBy: { sortOrder: "asc" },
@@ -213,7 +213,6 @@ export default async function HomePage({
       where: { isActive: true, position: "bottom" },
       orderBy: { sortOrder: "asc" },
     }),
-    prisma.groupBuyCampaign.count({ where: { status: "ACTIVE" } }),
   ]);
 
   // 이미지 파일이 없는 배너는 서버에서 걸러 첫 렌더부터 기본(사주메이트) 배너가 나가게 한다
@@ -234,7 +233,6 @@ export default async function HomePage({
           imageUrl: b.imageUrl,
           linkUrl: b.linkUrl,
         }))}
-        liveCampaignCount={activeCampaignCount}
       />
 
       {/* ───── 내 단골 상담사 LIVE 방송 중 상담상품 (상담사별 구분) ───── */}
@@ -483,6 +481,66 @@ export default async function HomePage({
               </div>
             );
           })}
+        </div>
+      </section>
+
+      {/* ───── 단골 고객관리 · AI 상담요약 (상담사·고객 모두를 위한 기능) ───── */}
+      <section className="px-4 pt-8">
+        <div className="rounded-3xl border border-brand-100 bg-gradient-to-br from-brand-50/70 to-purple-50/50 p-5">
+          <div className="inline-flex items-center gap-1 rounded-full bg-white/70 text-brand-700 px-2.5 py-1 mb-2 ring-1 ring-brand-100">
+            <Sparkles size={12} strokeWidth={2} /> <span className="text-[10px] font-bold">단골 관리 · AI 요약</span>
+          </div>
+          <h2 className="text-[18px] font-extrabold text-gray-900">한 번 온 고객, 계속 이어지는 상담</h2>
+          <p className="mt-1.5 text-[12px] text-gray-500 leading-relaxed">
+            상담사는 단골 고객을 손쉽게 관리하고, 고객은 상담 내용을 AI 요약으로 쉽게 이해해요.
+          </p>
+
+          <div className="mt-4 space-y-2.5">
+            {/* 단골 고객관리 프로그램 (상담사용) */}
+            <div className="rounded-2xl bg-white border border-gray-100 p-4">
+              <div className="flex items-center gap-2.5 mb-2">
+                <span className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0">
+                  <UserRoundCheck size={18} strokeWidth={1.8} className="text-brand-600" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[13.5px] font-bold text-gray-900">단골 고객관리 프로그램</p>
+                  <p className="text-[10.5px] text-brand-600 font-bold">상담사를 위한 기능</p>
+                </div>
+              </div>
+              <p className="text-[12px] text-gray-600 leading-relaxed">
+                재방문 고객을 한 곳에서 관리해요. 고객별 이전 상담 내역과 예약 기록이 정리돼 있어,
+                단골이 다시 찾아와도 처음부터 다시 묻지 않고 바로 이어서 상담할 수 있어요.
+              </p>
+            </div>
+
+            {/* AI 상담요약 (상담사·고객 공통) */}
+            <div className="rounded-2xl bg-white border border-gray-100 p-4">
+              <div className="flex items-center gap-2.5 mb-2">
+                <span className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+                  <Bot size={18} strokeWidth={1.8} className="text-purple-600" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[13.5px] font-bold text-gray-900">AI 상담요약</p>
+                  <p className="text-[10.5px] text-purple-600 font-bold">상담사 · 고객 모두에게</p>
+                </div>
+              </div>
+              <p className="text-[12px] text-gray-600 leading-relaxed">
+                상담이 끝나면 AI가 상담 내용을 자동으로 요약해줘요. 상담사는 요약으로 재방문 고객을
+                더 쉽게 관리하고, 고객은 복잡했던 상담 내용을 한눈에 이해하고 언제든 다시 볼 수 있어요.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-3.5 grid grid-cols-2 gap-2.5">
+            <div className="flex items-start gap-2 rounded-2xl bg-white/60 border border-brand-100 px-3 py-2.5">
+              <UserRoundCheck size={15} strokeWidth={1.9} className="text-brand-600 flex-shrink-0 mt-0.5" />
+              <p className="text-[11px] text-gray-600 leading-relaxed">상담사는 단골을 놓치지 않고 오래 이어가요</p>
+            </div>
+            <div className="flex items-start gap-2 rounded-2xl bg-white/60 border border-brand-100 px-3 py-2.5">
+              <FileText size={15} strokeWidth={1.9} className="text-purple-600 flex-shrink-0 mt-0.5" />
+              <p className="text-[11px] text-gray-600 leading-relaxed">고객은 AI 요약으로 상담을 쉽게 기억해요</p>
+            </div>
+          </div>
         </div>
       </section>
 

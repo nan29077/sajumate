@@ -32,7 +32,6 @@ function RegisterForm() {
   const { appAlert } = useAppDialog();
   const flags = useFeatureFlags();
   const sellerRefFromUrl = searchParams?.get("ref") ?? null;
-  const refCode = searchParams?.get("code") ?? null;
   const typeParam = searchParams?.get("type") ?? "";
   // 상담사 소개 페이지(/become-seller)에서 "상담사 신청하기"로 들어오면 ?role=CONSULTANT 로 상담사 가입을 미리 선택.
   const roleFromUrl = (searchParams?.get("role") ?? "").toUpperCase() === "CONSULTANT" ? "CONSULTANT" : null;
@@ -51,7 +50,6 @@ function RegisterForm() {
     address1: "",
     address2: "",
     role: roleFromUrl || ("CUSTOMER" as string),
-    referralCode: refCode || "",
   });
   // 관리자가 설정한 회원가입 항목 권한(필수/선택/숨김). 로드 전에는 코드 기본값 사용.
   const [fieldSettings, setFieldSettings] = useState<RegisterFieldSettings>(REGISTER_FIELD_DEFAULTS);
@@ -187,7 +185,6 @@ function RegisterForm() {
           address2: isHidden("address") ? "" : form.address2,
           role: form.role,
           sellerRef,
-          referralCode: form.referralCode || null,
         }),
       });
       const data = await res.json();
@@ -243,7 +240,7 @@ function RegisterForm() {
     signIn(provider, { callbackUrl });
   };
 
-  const hasReferral = !!sellerRef || !!refCode;
+  const hasReferral = !!sellerRef;
 
   if (registrationResult?.needsApproval) {
     return (
@@ -308,9 +305,7 @@ function RegisterForm() {
               <span className="font-medium">
                 {autoFilledShopName
                   ? `${autoFilledShopName} 상담사 초대로 가입합니다`
-                  : sellerRef
-                  ? "상담사 초대를 통해 가입합니다"
-                  : "추천인 코드를 통해 가입합니다"}
+                  : "상담사 전용 공간의 회원으로 가입합니다"}
               </span>
             </div>
           )}
@@ -548,36 +543,12 @@ function RegisterForm() {
             </div>
             )}
 
-            {flags.referral && (
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                추천인 코드 <span className="text-gray-400 font-normal">(선택)</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  className={`input-field text-sm py-2.5 pr-8 ${hasReferral ? "bg-brand-50 border-brand-200 text-brand-700" : ""}`}
-                  placeholder="추천인 코드를 입력하세요"
-                  value={form.referralCode}
-                  onChange={(e) => setForm({ ...form, referralCode: e.target.value })}
-                  readOnly={!!refCode}
-                />
-                {hasReferral && (
-                  <Icon name="Check" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-500" />
-                )}
-              </div>
-              <p className="text-[10px] text-gray-400 mt-1">
-                추천인이 있으면 코드를 입력해 주세요
-              </p>
-            </div>
-            )}
-
             {!sellerRef && (
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-2">가입 유형</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { value: "CUSTOMER", label: "시청자 회원", desc: "상담 예약 & 단체 상담", badge: "즉시 이용 가능" },
+                    { value: "CUSTOMER", label: "시청자 회원", desc: "상담 예약 & 라이브 상담", badge: "즉시 이용 가능" },
                     { value: "CONSULTANT", label: "상담사", desc: "점집 운영 & 판매", badge: "관리자 승인 필요" },
                   ].map((opt) => (
                     <button

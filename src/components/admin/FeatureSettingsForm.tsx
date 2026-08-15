@@ -9,7 +9,9 @@ import { useAppDialog } from "@/components/shared/AppDialog";
 import SavedPopup from "@/components/shared/SavedPopup";
 
 // 탭으로 노출할 기능 그룹 (스위치가 하나라도 있는 그룹만)
-const FEATURE_TABS = FEATURE_GROUPS.filter((g) => FEATURE_META.some((f) => f.group === g.key));
+const REMOVED_FEATURE_KEYS = new Set<keyof FeatureFlags>(["groupBuy", "regGroupBuy", "referral", "productRequest"]);
+const ACTIVE_FEATURE_META = FEATURE_META.filter((feature) => !REMOVED_FEATURE_KEYS.has(feature.key));
+const FEATURE_TABS = FEATURE_GROUPS.filter((g) => ACTIVE_FEATURE_META.some((f) => f.group === g.key));
 
 const GROUP_ICONS: Record<FeatureGroupKey, typeof BookOpen> = {
   transaction: BookOpen,
@@ -22,22 +24,16 @@ const GROUP_ICONS: Record<FeatureGroupKey, typeof BookOpen> = {
 export default function FeatureSettingsForm({
   initialFlags,
   initialSettlementDays,
-  initialMiddleSettleDays = 5,
-  initialBrandSettleDays = 5,
   defaultSettlementDays,
 }: {
   initialFlags: FeatureFlags;
   initialSettlementDays: number;
-  initialMiddleSettleDays?: number;
-  initialBrandSettleDays?: number;
   defaultSettlementDays: number;
 }) {
   const router = useRouter();
   const { appAlert } = useAppDialog();
   const [flags, setFlags] = useState<FeatureFlags>(initialFlags);
   const [settlementDays, setSettlementDays] = useState<number>(initialSettlementDays);
-  const [middleSettleDays, setMiddleSettleDays] = useState<number>(initialMiddleSettleDays);
-  const [brandSettleDays, setBrandSettleDays] = useState<number>(initialBrandSettleDays);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [featureTab, setFeatureTab] = useState<FeatureGroupKey>(FEATURE_TABS[0]?.key ?? "transaction");
@@ -55,7 +51,7 @@ export default function FeatureSettingsForm({
       const res = await fetch("/api/admin/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ flags, settlementBusinessDays: settlementDays, middleSettleDays, brandSettleDays }),
+        body: JSON.stringify({ flags, settlementBusinessDays: settlementDays }),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
@@ -65,8 +61,6 @@ export default function FeatureSettingsForm({
       const data = await res.json();
       setFlags(data.flags);
       setSettlementDays(data.settlementBusinessDays);
-      if (typeof data.middleSettleDays === "number") setMiddleSettleDays(data.middleSettleDays);
-      if (typeof data.brandSettleDays === "number") setBrandSettleDays(data.brandSettleDays);
       setSaved(true);
       setShowSavedPopup(true);
       // 변경된 토글이 앱 전반(레이아웃/메뉴)에 반영되도록 서버 컴포넌트 갱신
@@ -94,7 +88,7 @@ export default function FeatureSettingsForm({
           {FEATURE_TABS.map((g) => {
             const GroupIcon = GROUP_ICONS[g.key];
             const active = featureTab === g.key;
-            const count = FEATURE_META.filter((f) => f.group === g.key).length;
+            const count = ACTIVE_FEATURE_META.filter((f) => f.group === g.key).length;
             return (
               <button
                 key={g.key}
@@ -122,7 +116,7 @@ export default function FeatureSettingsForm({
 
         {/* 선택된 그룹의 스위치 목록 */}
         <div className="divide-y divide-gray-100">
-          {FEATURE_META.filter((f) => f.group === featureTab).map((f) => (
+          {ACTIVE_FEATURE_META.filter((f) => f.group === featureTab).map((f) => (
             <div key={f.key} className="py-3.5">
               <div className="flex items-start justify-between gap-4">
                 <p className="text-sm font-medium text-gray-900">{f.label}</p>
@@ -155,11 +149,9 @@ export default function FeatureSettingsForm({
           <Icon name="Calendar" size={16} className="text-gray-700" />
           <h2 className="text-sm font-bold text-gray-900">정산 주기 설정 (영업일 기준)</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:max-w-sm">
           {[
             { label: "상담사 정산 주기", value: settlementDays, set: setSettlementDays },
-            { label: "중간관리자 정산 주기", value: middleSettleDays, set: setMiddleSettleDays },
-            { label: "브랜드사 정산 주기", value: brandSettleDays, set: setBrandSettleDays },
           ].map((f) => (
             <div key={f.label} className="rounded-lg border border-gray-100 p-3">
               <label className="block text-[11px] font-medium text-gray-600 mb-1.5">{f.label}</label>

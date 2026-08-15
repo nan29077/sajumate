@@ -8,7 +8,9 @@
 //
 // 이 파일은 클라이언트 번들에도 포함되므로 prisma 등 서버 전용 모듈을 import 하지 않습니다.
 
-export const FEATURE_GROUP_BUY = true; // 단체 상담
+// 셀러브릭스의 공동구매 기능은 사주메이트에서 사용하지 않는다.
+// 타입과 설정 키는 기존 설정/데이터 호환을 위해 유지하되 런타임에서는 항상 비활성화한다.
+export const FEATURE_GROUP_BUY = false;
 export const FEATURE_LIVE_COMMERCE = true; // 라이브 상담
 export const FEATURE_SELLER = true; // 상담사(인플루언서) 탐색 기능
 export const FEATURE_BRIX = true; // 브릭스 = 콘텐츠 피드(/content)

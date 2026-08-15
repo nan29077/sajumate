@@ -55,12 +55,12 @@ export default function MobileSidebar({ items, roleConfig, user }: MobileSidebar
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="lg:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 safe-area-top">
+      <div className="lg:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-brand-100 safe-area-top shadow-[0_8px_24px_rgba(56,35,105,0.05)]">
         <div className="flex min-h-14 items-center justify-between px-3 sm:px-4 py-2">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setOpen(true)}
-              className="min-w-10 min-h-10 inline-flex items-center justify-center -ml-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
+              className="min-w-10 min-h-10 inline-flex items-center justify-center -ml-1 text-brand-700 hover:text-brand-900 hover:bg-brand-50 rounded-xl transition-colors"
               aria-expanded={open}
               aria-controls="dashboard-mobile-menu"
               aria-label="메뉴 열기"
@@ -99,7 +99,7 @@ export default function MobileSidebar({ items, roleConfig, user }: MobileSidebar
         aria-modal="true"
         aria-hidden={!open}
         aria-label="대시보드 메뉴"
-        className={`lg:hidden fixed top-0 left-0 bottom-0 w-[min(88vw,320px)] bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col safe-area-top safe-area-bottom ${
+        className={`lg:hidden fixed top-0 left-0 bottom-0 w-[min(88vw,320px)] bg-[#fcfaff] z-50 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col safe-area-top safe-area-bottom ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -139,13 +139,13 @@ export default function MobileSidebar({ items, roleConfig, user }: MobileSidebar
           {groups.map((group, gi) => (
             <div key={group.name || gi} className={gi > 0 ? "mt-3" : ""}>
               {group.name && gi > 0 && (
-                <p className="text-[10px] font-semibold text-gray-300 uppercase tracking-wider px-3 mb-1.5">
+                <p className="text-[10px] font-bold text-brand-400 tracking-[0.12em] px-3 mb-2">
                   {group.name}
                 </p>
               )}
               <div className="space-y-0.5">
                 {group.items.map((item) => {
-                  const isDashboardRoot = ["/admin", "/seller", "/brand"].includes(item.href);
+                  const isDashboardRoot = ["/admin", "/seller"].includes(item.href);
                   const isActive = isDashboardRoot
                     ? pathname === item.href
                     : pathname === item.href || pathname.startsWith(item.href + "/");
@@ -156,11 +156,11 @@ export default function MobileSidebar({ items, roleConfig, user }: MobileSidebar
                       onClick={() => setOpen(false)}
                       className={`flex min-h-11 items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] transition-all ${
                         isActive
-                          ? "bg-brand-500 text-black font-bold"
-                          : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+                          ? "bg-brand-600 text-white font-bold shadow-sm shadow-brand-950/15"
+                          : "text-gray-500 hover:bg-brand-50 hover:text-brand-800"
                       }`}
                     >
-                      <Icon name={item.iconName} size={16} className={isActive ? "" : "opacity-60"} />
+                      <Icon name={item.iconName} size={17} className={isActive ? "text-moon-100" : "text-brand-400"} />
                       {item.label}
                     </Link>
                   );

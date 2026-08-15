@@ -23,7 +23,7 @@ export default function AddToCartButton({
   sellerId,
   campaignId,
   className = "btn-primary w-full py-3.5",
-  label = "장바구니 담기",
+  label = "예약함에 담기",
   disabled = false,
   hideIcon = false,
 }: AddToCartButtonProps) {
@@ -59,7 +59,7 @@ export default function AddToCartButton({
         router.refresh();
       } else {
         const data = await res.json();
-        await appAlert(data.error || "장바구니 추가에 실패했습니다.");
+        await appAlert(data.error || "예약함 추가에 실패했습니다.");
       }
     } catch {
       appAlert("오류가 발생했습니다.");

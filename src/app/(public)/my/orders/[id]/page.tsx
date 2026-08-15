@@ -133,11 +133,11 @@ export default async function OrderDetailPage({
 
   const discountLabel =
     order.discountType === "referral"
-      ? "추천인 할인"
+      ? "기존 할인"
       : order.discountType === "pick_channel"
         ? "채널인증 할인"
         : order.discountType?.startsWith("cart")
-          ? "장바구니 할인"
+          ? "묶음 예약 할인"
           : "할인";
 
   const deliveryCourier = null;
@@ -299,11 +299,6 @@ export default async function OrderDetailPage({
           <div className="px-4 py-3 border-b border-gray-50 flex items-center gap-1.5">
             <Icon name="Package" size={14} className="text-gray-400" />
             <h2 className="text-sm font-bold text-gray-900">예약 상담상품</h2>
-            {order.campaign && (
-              <span className="text-[10px] text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded-full ml-1">
-                단체 상담
-              </span>
-            )}
           </div>
           <div className="divide-y divide-gray-50">
             {order.items.map((item) => (

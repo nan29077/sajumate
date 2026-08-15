@@ -28,7 +28,7 @@ export default async function SellersPage({
     where: { isApproved: true, ...(category ? { category } : {}) },
     include: {
       user: { select: { name: true, avatar: true } },
-      _count: { select: { campaigns: true, shopProducts: true, fans: true } },
+      _count: { select: { shopProducts: true, fans: true } },
       // 현재 라이브 중인지 확인
       liveStreams: {
         where: { status: "LIVE" },
@@ -113,7 +113,6 @@ export default async function SellersPage({
       mood: s.mood,
       totalFans: s.totalFans,
       _count: {
-        campaigns: s._count.campaigns,
         shopProducts: s._count.shopProducts,
         fans: s._count.fans,
       },

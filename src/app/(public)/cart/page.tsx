@@ -11,7 +11,7 @@ export default async function CartPage() {
   if (!session) redirect(getShopAwareLoginPath());
 
   const cartItems = await prisma.cartItem.findMany({
-    where: { userId: session.user!.id },
+    where: { userId: session.user!.id, campaignId: null },
     include: {
       variant: {
         include: {
@@ -41,36 +41,20 @@ export default async function CartPage() {
   });
   const productMap = Object.fromEntries(products.map((p) => [p.id, p]));
 
-  // Load campaign info for items with campaignId
-  const campaignIds = cartItems
-    .map((item) => item.campaignId)
-    .filter(Boolean) as string[];
-  const campaigns =
-    campaignIds.length > 0
-      ? await prisma.groupBuyCampaign.findMany({
-          where: { id: { in: campaignIds } },
-          select: { id: true, campaignPrice: true, title: true },
-        })
-      : [];
-  const campaignMap = Object.fromEntries(campaigns.map((c) => [c.id, c]));
-
   const items = cartItems.map((item) => {
     const product = item.variant?.product || productMap[item.productId];
-    const campaign = item.campaignId ? campaignMap[item.campaignId] : null;
-    const campaignPrice = campaign ? Number(campaign.campaignPrice) : null;
     return {
       id: item.id,
       productId: item.productId,
       sellerId: item.sellerId,
-      campaignId: item.campaignId,
+      campaignId: null,
       name: product?.name || "상담상품",
       thumbnail: product?.thumbnail || null,
       variantId: item.variantId,
       variantName: item.variant?.name || null,
-      price:
-        campaignPrice || Number(item.variant?.price || product?.basePrice || 0),
+      price: Number(item.variant?.price || product?.basePrice || 0),
       quantity: item.quantity,
-      isCampaign: !!item.campaignId,
+      isCampaign: false,
       shippingFee: 0,
       freeShipping: true,
       freeShippingThreshold: null,

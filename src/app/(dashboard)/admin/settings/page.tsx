@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import {
-  getFeatureFlags, getSettlementBusinessDays, getMiddleSettleDays, getBrandSettleDays,
+  getFeatureFlags, getSettlementBusinessDays,
   getRegisterFieldSettings,
   DEFAULT_SETTLEMENT_BUSINESS_DAYS,
 } from "@/lib/settings";
@@ -18,11 +18,9 @@ export default async function AdminSettingsPage() {
   if (!session?.user) redirect("/auth/login");
   if (session.user.role !== "SUPER_ADMIN") redirect("/");
 
-  const [flags, settlementBusinessDays, middleSettleDays, brandSettleDays, fees, registerFields] = await Promise.all([
+  const [flags, settlementBusinessDays, fees, registerFields] = await Promise.all([
     getFeatureFlags(),
     getSettlementBusinessDays(),
-    getMiddleSettleDays(),
-    getBrandSettleDays(),
     getPlatformFees(),
     getRegisterFieldSettings(),
   ]);
@@ -39,8 +37,6 @@ export default async function AdminSettingsPage() {
           <FeatureSettingsForm
             initialFlags={flags}
             initialSettlementDays={settlementBusinessDays}
-            initialMiddleSettleDays={middleSettleDays}
-            initialBrandSettleDays={brandSettleDays}
             defaultSettlementDays={DEFAULT_SETTLEMENT_BUSINESS_DAYS}
           />
         }

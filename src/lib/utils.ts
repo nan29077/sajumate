@@ -62,10 +62,6 @@ export function sellerShopUrl(slug: string): string {
   return `/shop/${slug}`;
 }
 
-export function campaignUrl(id: string): string {
-  return `/campaigns/${id}`;
-}
-
 export function productUrl(id: string): string {
   return `/products/${id}`;
 }

@@ -30,7 +30,7 @@ export default async function SellerShopPage() {
     where: { userId: session!.user!.id },
     include: {
       user: { select: { avatar: true } },
-      _count: { select: { fans: true, shopProducts: true, campaigns: true, referredBuyers: true } },
+      _count: { select: { fans: true, shopProducts: true } },
     },
   });
 
@@ -91,6 +91,7 @@ export default async function SellerShopPage() {
           shopBanner: seller.shopBanner,
         }}
         initialCustomization={customization}
+        defaultBanner={displayBanner}
       />
 
       {/* 프로필 캐릭터 선택 */}
@@ -104,7 +105,7 @@ export default async function SellerShopPage() {
         <p className="text-[10px] text-gray-400 mb-3">
           {seller.shopBanner
             ? "직접 등록하신 배너입니다. 위 '점집 배너 이미지'에서 변경할 수 있어요."
-            : "배너를 등록하지 않아 사주메이트 기본 배너가 자동 적용됐습니다. 직접 등록하면 교체됩니다."}
+            : "직접 등록하기 전까지 생성형 기본 배너 5종 중 하나가 자동 적용됩니다. 업로드하면 즉시 교체됩니다."}
         </p>
         <div className="w-full h-32 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
           <img src={displayBanner} alt="점집 배너 미리보기" className="w-full h-full object-cover" />
@@ -113,7 +114,7 @@ export default async function SellerShopPage() {
 
       {/* 점집 테마 색상 (배너 그라디언트·강조색에 반영) */}
       <div className="mt-4">
-        <ShopThemeColorPicker currentColor={seller.shopThemeColor || "#f5a700"} />
+        <ShopThemeColorPicker currentColor={seller.shopThemeColor || "#6D4BC3"} />
       </div>
 
       {/* 점집 링크 & 통계 */}
@@ -136,11 +137,6 @@ export default async function SellerShopPage() {
             <Icon name="Cart" size={14} strokeWidth={1.5} className="text-brand-500" />
             <span className="font-semibold">{seller._count.shopProducts}</span> 상담상품
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-            <Icon name="Star" size={14} strokeWidth={1.5} className="text-brand-500" />
-            <span className="font-semibold">{seller._count.campaigns}</span> 캠페인
-          </div>
-          {/* 사주메이트: 추천인 통계 미사용 */}
         </div>
       </div>
 
@@ -154,12 +150,10 @@ export default async function SellerShopPage() {
       {/* 점집 기능 관리 */}
       <ShopFeatureToggles
         initialFeatures={{
-          groupBuy: seller.featureGroupBuy ?? true,
           content: seller.featureContent ?? true,
           liveCommerce: seller.featureLiveCommerce ?? false,
         }}
         adminFlags={{
-          groupBuy: flags.groupBuy,
           content: flags.brix,
           liveCommerce: flags.liveCommerce,
         }}

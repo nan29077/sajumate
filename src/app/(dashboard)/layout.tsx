@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { getFeatureFlags } from "@/lib/settings";
 import { pickRoleAvatar, resolveAdminDashboardAvatar, resolveConsultantAvatar, shouldUseAvatar } from "@/lib/defaults";
 import type { FeatureFlags } from "@/lib/featureFlags";
-import { Shield, Building2, Crown, User } from 'lucide-react';
+import { Shield, Building2, User } from 'lucide-react';
 import LogoutButton from "@/components/shared/LogoutButton";
 import MobileSidebar from "@/components/shared/MobileSidebar";
 import SidebarNavLinks from "@/components/shared/SidebarNavLinks";
@@ -44,19 +44,18 @@ export default async function DashboardLayout({
       { href: "/admin/members", iconName: "Users", label: "단골 회원 관리", group: "회원 관리" },
       { href: "/admin/sellers", iconName: "Store", label: "상담사 관리", group: "회원 관리" },
       // 상담상품 관리
-      { href: "/admin/products", iconName: "Package", label: "상담상품 관리", group: "상담상품 관리" },
+      { href: "/admin/products", iconName: "ConsultProduct", label: "상담상품 관리", group: "상담상품 관리" },
       { href: "/admin/categories", iconName: "Category", label: "카테고리 관리", group: "상담상품 관리" },
       // 예약·정산
       { href: "/admin/reservations", iconName: "Calendar", label: "예약 관리", group: "예약·정산" },
-      { href: "/admin/sessions", iconName: "Video", label: "영상 세션 관리", group: "예약·정산" },
-      { href: "/admin/campaigns", iconName: "Event", label: "단체 상담 관리", group: "예약·정산" },
+      { href: "/admin/sessions", iconName: "LiveSession", label: "영상 세션 관리", group: "예약·정산" },
       { href: "/admin/settlements", iconName: "Settlement", label: "정산·재무 관리", group: "예약·정산" },
       // 콘텐츠
       { href: "/admin/banners", iconName: "Globe", label: "사이트 관리", group: "콘텐츠" },
       { href: "/admin/contents", iconName: "Content", label: "콘텐츠 관리", group: "콘텐츠" },
       { href: "/admin/games", iconName: "Play", label: "게임관리", group: "콘텐츠" },
       { href: "/admin/lives", iconName: "Live", label: "라이브 관리", group: "콘텐츠" },
-      { href: "/admin/live-products", iconName: "Live", label: "라이브 상담상품관리", group: "콘텐츠" },
+      { href: "/admin/live-products", iconName: "ConsultProduct", label: "라이브 상담상품 관리", group: "콘텐츠" },
       // 알림톡
       { href: "/admin/alimtalk", iconName: "Notification", label: "알림톡 관리", group: "알림톡" },
       // 고객지원
@@ -70,9 +69,9 @@ export default async function DashboardLayout({
       // 점집 관리
       { href: "/seller/shop", iconName: "Store", label: "내 점집 관리", group: "점집 관리" },
       // 상담상품 관리
-      { href: "/seller/products", iconName: "Package", label: "상담상품 관리", group: "상담상품 관리" },
+      { href: "/seller/products", iconName: "ConsultProduct", label: "상담상품 관리", group: "상담상품 관리" },
       // 판매·라이브 (콘텐츠/단체 상담/게임 메뉴는 점집 운영에 쓰지 않아 제거)
-      { href: "/seller/live-mode", iconName: "Video", label: "예약 현황", group: "판매·라이브" },
+      { href: "/seller/live-mode", iconName: "ReservationStatus", label: "예약 현황", group: "판매·라이브" },
       { href: "/seller/live", iconName: "Live", label: "라이브 상담", group: "판매·라이브" },
       { href: "/seller/widget", iconName: "QrCode", label: "방송 도구", group: "판매·라이브" },
       // 예약·정산
@@ -92,20 +91,18 @@ export default async function DashboardLayout({
   // 기능 토글에 따라 관련 메뉴 숨김. (href → 필요한 기능 키)
   const flags: FeatureFlags = await getFeatureFlags();
   const MENU_FEATURE_GATE: { match: (href: string) => boolean; key: keyof FeatureFlags }[] = [
-    { match: (h) => h.endsWith("/campaigns"), key: "groupBuy" },
     { match: (h) => h.endsWith("/live") || h.endsWith("/live-products"), key: "liveCommerce" },
     { match: (h) => h.endsWith("/contents"), key: "brix" },
     { match: (h) => h === "/admin/sellers", key: "seller" },
     { match: (h) => h.endsWith("/games"), key: "game" },
   ];
   const items = (navItems[role] || navItems.CUSTOMER).filter((item) => {
-    // 라이브 상담상품관리: 라이브 상담 또는 단체 상담 중 하나라도 꺼져 있으면 숨김
-    if (item.href === "/admin/live-products") return flags.liveCommerce && flags.groupBuy;
+    if (item.href === "/admin/live-products") return flags.liveCommerce;
     const gate = MENU_FEATURE_GATE.find((g) => g.match(item.href));
     return gate ? flags[gate.key] : true;
   });
 
-  // Fetch profile photo for seller/brand - safely
+  // 역할별 프로필 이미지를 안전하게 조회한다.
   let profileImage = session.user.image || null;
   let userAvatar: string | null = null;
   let userGender: string | null = null;
@@ -118,7 +115,10 @@ export default async function DashboardLayout({
     if (role === "CONSULTANT") {
       const seller = await prisma.sellerProfile.findUnique({ where: { userId: session.user.id }, select: { shopLogo: true, shopName: true } });
       if (seller?.shopLogo) profileImage = seller.shopLogo;
-      if (seller?.shopName) sellerShopName = seller.shopName;
+      if (seller?.shopName) {
+        // 상담사 콘솔 좌측 프로필에는 "OO 점집" 대신 상담사명만 간결하게 표시한다.
+        sellerShopName = seller.shopName.replace(/\s*의?\s*점집\s*$/, "").trim() || seller.shopName;
+      }
     }
   } catch (e) {
     console.error("Profile image fetch error:", e);
@@ -145,18 +145,18 @@ export default async function DashboardLayout({
   const sidebarAvatar = displayImage;
 
   const roleConfig: Record<string, { label: string; labelEn: string; icon: any; color: string; gradient: string }> = {
-    SUPER_ADMIN: { label: "최고관리자", labelEn: "Admin Console", icon: Shield, color: "text-red-600 bg-red-50", gradient: "from-red-500 to-rose-600" },
-    CONSULTANT: { label: "상담사", labelEn: "Consultant Studio", icon: Building2, color: "text-blue-600 bg-blue-50", gradient: "from-blue-500 to-indigo-600" },
+    SUPER_ADMIN: { label: "최고관리자", labelEn: "Admin Console", icon: Shield, color: "text-brand-700 bg-brand-50", gradient: "from-brand-600 to-brand-950" },
+    CONSULTANT: { label: "상담사", labelEn: "Consultant Studio", icon: Building2, color: "text-brand-700 bg-moon-50", gradient: "from-brand-500 to-brand-800" },
     CUSTOMER: { label: "고객", labelEn: "My Page", icon: User, color: "text-green-600 bg-green-50", gradient: "from-green-500 to-emerald-600" },
   };
   const rc = roleConfig[role] || roleConfig.CUSTOMER;
 
   return (
-    <div className="min-h-screen bg-[#fdfaf0]" data-dashboard-role={role}>
+    <div className="min-h-screen bg-[#f7f4fc]" data-dashboard-role={role}>
       {/* Desktop Sidebar */}
-      <aside className="fixed left-0 top-0 bottom-0 w-[260px] bg-white border-r border-gray-100/80 hidden lg:flex flex-col z-40">
+      <aside className="fixed left-0 top-0 bottom-0 w-[260px] bg-white/95 backdrop-blur-xl border-r border-brand-100 hidden lg:flex flex-col z-40 shadow-[10px_0_36px_rgba(56,35,105,0.04)]">
         {/* Logo & Role */}
-        <div className="px-5 py-4 border-b border-gray-100/80 flex items-start justify-between">
+        <div className="px-5 py-4 border-b border-brand-100 flex items-start justify-between bg-gradient-to-br from-white to-brand-50/60">
           <Link href="/" className="flex flex-col items-start gap-0.5">
             <BrandWordmark size="md" />
             <p className="text-[9px] text-gray-400 tracking-wide pl-0.5">{rc.labelEn}</p>
@@ -166,17 +166,17 @@ export default async function DashboardLayout({
         </div>
 
         {/* User Profile */}
-        <div className="px-4 py-3.5 border-b border-gray-100/80">
+        <div className="px-4 py-3.5 border-b border-brand-100/80">
           <div className="flex items-center gap-3">
             {displayImage ? (
               <img
                 src={displayImage}
                 alt={session.user.name || "프로필"}
-                className="w-9 h-9 rounded-lg object-cover shadow-sm"
+                className="w-10 h-10 rounded-xl object-cover shadow-sm ring-2 ring-brand-100"
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${rc.gradient} flex items-center justify-center text-white text-sm font-bold shadow-sm`}>
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${rc.gradient} flex items-center justify-center text-white text-sm font-bold shadow-sm ring-2 ring-brand-100`}>
                 {sidebarName?.charAt(0) || "U"}
               </div>
             )}

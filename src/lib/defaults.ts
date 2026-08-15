@@ -11,8 +11,7 @@ export const NO_IMAGE = "/no-image.png";
 export const DEFAULT_PRODUCT_IMAGE = NO_IMAGE;
 
 // 점집 상단 기본 배너 (깔끔한 실사)
-export const DEFAULT_SHOP_BANNER =
-  "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1000&q=80&auto=format&fit=crop";
+export const DEFAULT_SHOP_BANNER = "/images/banners/shop-generated-banner-01.jpg";
 
 // ─── 역할별 캐릭터 아바타 (public/avatars/*.png) ────────────────────────────
 
@@ -141,12 +140,12 @@ export function resolveConsultantAvatar(seed: string, currentAvatar?: string | n
   return pickSajuAvatar(seed);
 }
 
-// ─── 점집 기본 배너 (public/images/banners/*.svg) ───────────────────────────
-// 배너를 올리지 않은 상담사에게 점집·사주 분위기의 기본 배너를 배정한다.
+// ─── 점집 기본 배너 (생성형 이미지 5종) ─────────────────────────────────────
+// 배너를 올리지 않은 상담사에게 점집·사주 분위기의 생성형 기본 배너를 배정한다.
 // 상담사 id 해시 기반이라 같은 상담사는 항상 같은 배너를 본다.
 export const SHOP_BANNERS = Array.from(
-  { length: 6 },
-  (_, i) => `/images/banners/shop-banner-${String(i + 1).padStart(2, "0")}.svg`,
+  { length: 5 },
+  (_, i) => `/images/banners/shop-generated-banner-${String(i + 1).padStart(2, "0")}.jpg`,
 );
 
 export function pickShopBanner(seed: string): string {

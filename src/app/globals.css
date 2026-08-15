@@ -19,6 +19,10 @@
     --saju-lavender: #c9b8ff;
     --saju-gold: #f2c66d;
     --saju-cream: #fbf8ff;
+    --saju-surface: #ffffff;
+    --saju-border: #ebe5f7;
+    --saju-muted: #766b8f;
+    --saju-shadow: 0 14px 40px rgba(56, 35, 105, 0.08);
   }
   
   body {
@@ -63,46 +67,46 @@
   }
 }
 
-/* 관리자 콘솔 모바일 공통 규칙: 콘텐츠 폭, 폼, 표, 모달을 작은 화면 안에 유지한다. */
+/* 관리자·상담사 콘솔 모바일 공통 규칙 */
 @media (max-width: 639px) {
-  [data-dashboard-role="SUPER_ADMIN"] .dashboard-content {
+  [data-dashboard-role] .dashboard-content {
     padding: 0.75rem;
   }
 
-  [data-dashboard-role="SUPER_ADMIN"] .dashboard-content > * {
+  [data-dashboard-role] .dashboard-content > * {
     min-width: 0;
   }
 
-  [data-dashboard-role="SUPER_ADMIN"] .dashboard-content h1 {
+  [data-dashboard-role] .dashboard-content h1 {
     font-size: 1.125rem;
     line-height: 1.45;
     text-wrap: balance;
   }
 
-  [data-dashboard-role="SUPER_ADMIN"] .dashboard-content input:not([type="checkbox"]):not([type="radio"]),
-  [data-dashboard-role="SUPER_ADMIN"] .dashboard-content select,
-  [data-dashboard-role="SUPER_ADMIN"] .dashboard-content textarea {
+  [data-dashboard-role] .dashboard-content input:not([type="checkbox"]):not([type="radio"]),
+  [data-dashboard-role] .dashboard-content select,
+  [data-dashboard-role] .dashboard-content textarea {
     max-width: 100%;
     min-height: 2.625rem;
   }
 
-  [data-dashboard-role="SUPER_ADMIN"] .dashboard-content [role="dialog"] {
+  [data-dashboard-role] .dashboard-content [role="dialog"] {
     max-width: calc(100vw - 1.5rem);
     max-height: calc(100dvh - 1.5rem);
     overflow-y: auto;
   }
 
-  [data-dashboard-role="SUPER_ADMIN"] .dashboard-content .overflow-x-auto {
+  [data-dashboard-role] .dashboard-content .overflow-x-auto {
     overscroll-behavior-inline: contain;
     -webkit-overflow-scrolling: touch;
   }
 
-  [data-dashboard-role="SUPER_ADMIN"] .dashboard-content table {
+  [data-dashboard-role] .dashboard-content table {
     font-size: 0.75rem;
   }
 
-  [data-dashboard-role="SUPER_ADMIN"] .dashboard-content th,
-  [data-dashboard-role="SUPER_ADMIN"] .dashboard-content td {
+  [data-dashboard-role] .dashboard-content th,
+  [data-dashboard-role] .dashboard-content td {
     white-space: nowrap;
   }
 }
@@ -139,17 +143,20 @@
 
 /* ── 라이브 뷰어 다크 UI ─────────────────────────────────────────── */
 .honeycomb-bg {
-  background-color: #050505;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill='%23F2A900' fill-opacity='0.03'%3E%3Cpolygon points='13.99 9.25 13.99 19.85 8.56 22.85 3.14 19.85 3.14 9.25 8.56 6.25'/%3E%3Cpolygon points='24.99 9.25 24.99 19.85 19.56 22.85 14.14 19.85 14.14 9.25 19.56 6.25'/%3E%3Cpolygon points='13.99 30.25 13.99 40.85 8.56 43.85 3.14 40.85 3.14 30.25 8.56 27.25'/%3E%3C/g%3E%3C/svg%3E");
+  background-color: #100923;
+  background-image:
+    radial-gradient(circle at 18% 18%, rgba(137, 106, 241, 0.18), transparent 24rem),
+    radial-gradient(circle at 82% 82%, rgba(242, 198, 109, 0.1), transparent 22rem),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none'%3E%3Ccircle cx='24' cy='30' r='14' stroke='%23c9b8ff' stroke-opacity='.08'/%3E%3Ccircle cx='30' cy='25' r='14' fill='%23100923'/%3E%3Cpath d='M116 24l2 5 5 2-5 2-2 5-2-5-5-2 5-2z' fill='%23f2c66d' fill-opacity='.12'/%3E%3Ccircle cx='124' cy='116' r='26' stroke='%23896af1' stroke-opacity='.07'/%3E%3Cpath d='M26 124a46 46 0 0 1 60-43' stroke='%23c9b8ff' stroke-opacity='.06' stroke-dasharray='3 7'/%3E%3C/g%3E%3C/svg%3E");
 }
 .glass-dark {
-  background: rgba(5, 5, 5, 0.7);
+  background: rgba(23, 16, 45, 0.76);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 6px rgba(242, 169, 0, 0.4); }
-  50% { box-shadow: 0 0 16px rgba(242, 169, 0, 0.8); }
+  0%, 100% { box-shadow: 0 0 8px rgba(137, 106, 241, 0.38); }
+  50% { box-shadow: 0 0 18px rgba(201, 184, 255, 0.68); }
 }
 .animate-glow-pulse {
   animation: glow-pulse 2s ease-in-out infinite;
@@ -184,11 +191,11 @@
   }
 
   .badge-live {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500 text-white;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500 text-white;
   }
 
   .badge-scheduled {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-500 text-white;
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-moon-50 text-moon-700 ring-1 ring-inset ring-moon-500/30;
   }
 
   .badge-ended {
@@ -196,29 +203,113 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center px-6 py-3 bg-brand-500 text-black font-bold rounded-3xl
-           hover:bg-brand-600 active:scale-[0.97] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center px-6 py-3 bg-brand-600 text-white font-bold rounded-2xl shadow-sm shadow-brand-950/10
+           hover:bg-brand-700 active:scale-[0.97] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-6 py-3 bg-gray-900 text-white font-semibold rounded-3xl
-           hover:bg-gray-800 active:scale-[0.97] transition-all duration-200;
+    @apply inline-flex items-center justify-center px-6 py-3 bg-brand-950 text-white font-semibold rounded-2xl
+           hover:bg-brand-900 active:scale-[0.97] transition-all duration-200;
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-3xl
-           hover:bg-gray-50 active:scale-[0.97] transition-all duration-200;
+    @apply inline-flex items-center justify-center px-6 py-3 border border-brand-200 text-brand-800 font-semibold rounded-2xl
+           hover:bg-brand-50 active:scale-[0.97] transition-all duration-200;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-200 rounded-2xl text-sm
+    @apply w-full px-4 py-3 bg-white border border-brand-100 rounded-2xl text-sm
            focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500
            placeholder:text-gray-400 transition-all;
   }
 
   /* 친근한 카드: 큰 라운드 + 은은한 그림자 (말랑말랑) */
   .card-soft {
-    @apply bg-white rounded-[1.75rem] border border-gray-100 shadow-[0_4px_20px_rgba(245,167,0,0.06)];
+    @apply bg-white rounded-[1.75rem] border border-brand-100/70 shadow-[0_14px_40px_rgba(56,35,105,0.08)];
+  }
+
+  .dashboard-page {
+    @apply animate-fade-in space-y-5 sm:space-y-6;
+  }
+
+  .dashboard-page-header {
+    @apply relative overflow-hidden rounded-2xl border border-brand-100 bg-white px-4 py-4 shadow-[0_10px_30px_rgba(56,35,105,0.06)] sm:px-5;
+  }
+
+  .dashboard-panel {
+    @apply overflow-hidden rounded-2xl border border-brand-100/80 bg-white shadow-[0_10px_30px_rgba(56,35,105,0.055)];
+  }
+
+  .dashboard-stat {
+    @apply rounded-2xl border border-brand-100/80 bg-white p-3.5 shadow-[0_8px_24px_rgba(56,35,105,0.05)] transition-all duration-200 sm:p-4;
+  }
+
+  .dashboard-stat:hover {
+    @apply -translate-y-0.5 border-brand-200 shadow-[0_14px_30px_rgba(56,35,105,0.09)];
+  }
+
+  .dashboard-stat-card {
+    @apply flex min-h-24 flex-col justify-center rounded-2xl border border-brand-100/80 bg-white p-4 text-brand-600 shadow-[0_8px_24px_rgba(56,35,105,0.05)];
+  }
+
+  .dashboard-stat-card strong {
+    @apply mt-1 text-xl text-gray-900;
+  }
+
+  .dashboard-stat-card span {
+    @apply text-[11px] text-gray-400;
+  }
+
+  .dashboard-toolbar {
+    @apply flex flex-col gap-2 rounded-2xl border border-brand-100/80 bg-white p-3 sm:flex-row;
+  }
+
+  .dashboard-search-input {
+    @apply min-h-10 w-full rounded-xl border border-brand-100 bg-brand-50/30 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-brand-300 focus:ring-2 focus:ring-brand-100;
+  }
+
+  .dashboard-filter-button {
+    @apply min-h-10 rounded-xl border border-brand-100 bg-white px-3 text-xs font-semibold text-gray-500 transition hover:bg-brand-50;
+  }
+
+  .dashboard-filter-button-active {
+    @apply border-brand-500 bg-brand-600 text-white hover:bg-brand-700;
+  }
+
+  .dashboard-list-card {
+    @apply rounded-2xl border border-brand-100/80 bg-white p-3 shadow-[0_7px_20px_rgba(56,35,105,0.045)];
+  }
+
+  .dashboard-toggle-button {
+    @apply inline-flex min-h-10 flex-shrink-0 items-center justify-center gap-1 rounded-xl border border-gray-200 bg-gray-50 px-3 text-[11px] font-bold text-gray-400 transition disabled:opacity-60;
+  }
+
+  .dashboard-toggle-button-active {
+    @apply border-brand-200 bg-brand-50 text-brand-700;
+  }
+
+  .dashboard-empty-state {
+    @apply flex min-h-44 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-brand-200 bg-brand-50/30 p-6 text-center text-sm text-gray-400;
+  }
+
+  .dashboard-icon-tile {
+    @apply inline-flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-inset ring-brand-100;
+  }
+
+  .dashboard-tab {
+    @apply inline-flex min-h-10 items-center justify-center rounded-xl border border-brand-100 bg-white px-3 py-2 text-xs font-semibold text-gray-600 transition-colors hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700;
+  }
+
+  .dashboard-tab-active {
+    @apply border-brand-600 bg-brand-600 text-white shadow-sm shadow-brand-950/10 hover:border-brand-700 hover:bg-brand-700 hover:text-white;
+  }
+
+  .dashboard-action {
+    @apply inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-brand-100 bg-white px-3 py-2 text-xs font-semibold text-brand-800 transition-colors hover:border-brand-200 hover:bg-brand-50;
+  }
+
+  .dashboard-empty {
+    @apply flex min-h-40 flex-col items-center justify-center px-5 py-10 text-center text-sm text-gray-400;
   }
 
   .campaign-progress {
@@ -340,5 +431,63 @@
     line-height: 1.7;
     color: #555;
   }
+}
+
+/* 기존 대시보드 페이지의 레거시 색상을 사주메이트 토큰으로 정규화한다.
+   상태 의미가 있는 red/green/blue는 유지하고, 장식용 amber/indigo/black만 치환한다. */
+[data-dashboard-role] .bg-gray-900 { background-color: var(--saju-ink); }
+[data-dashboard-role] .hover\:bg-gray-800:hover { background-color: #17102d; }
+[data-dashboard-role] .bg-amber-400 { background-color: var(--saju-gold); }
+[data-dashboard-role] .bg-amber-50,
+[data-dashboard-role] .bg-yellow-50,
+[data-dashboard-role] .bg-orange-50 { background-color: #fff9ea; }
+[data-dashboard-role] .text-amber-500,
+[data-dashboard-role] .text-amber-600,
+[data-dashboard-role] .text-amber-700,
+[data-dashboard-role] .text-amber-800,
+[data-dashboard-role] .text-yellow-600,
+[data-dashboard-role] .text-yellow-700,
+[data-dashboard-role] .text-orange-500,
+[data-dashboard-role] .text-orange-600 { color: #9a6f24; }
+[data-dashboard-role] .border-amber-100,
+[data-dashboard-role] .border-amber-200,
+[data-dashboard-role] .border-yellow-200,
+[data-dashboard-role] .border-orange-100 { border-color: rgba(242, 198, 109, 0.42); }
+[data-dashboard-role] .bg-indigo-50,
+[data-dashboard-role] .bg-purple-50,
+[data-dashboard-role] .bg-pink-50 { background-color: #f7f4ff; }
+[data-dashboard-role] .bg-indigo-500,
+[data-dashboard-role] .bg-indigo-600,
+[data-dashboard-role] .bg-purple-600 { background-color: var(--saju-violet); }
+[data-dashboard-role] .text-indigo-500,
+[data-dashboard-role] .text-indigo-600,
+[data-dashboard-role] .text-indigo-700,
+[data-dashboard-role] .text-purple-500,
+[data-dashboard-role] .text-purple-600,
+[data-dashboard-role] .text-pink-500 { color: var(--saju-violet); }
+[data-dashboard-role] .border-indigo-100,
+[data-dashboard-role] .border-indigo-200,
+[data-dashboard-role] .border-purple-100 { border-color: var(--saju-border); }
+[data-dashboard-role] :is(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid rgba(104, 73, 216, 0.7);
+  outline-offset: 2px;
+}
+
+/* 아직 공통 프리미티브로 이전되지 않은 대시보드 서브페이지도 같은 표면 규칙을 사용한다. */
+[data-dashboard-role] .dashboard-content h1 {
+  color: var(--saju-ink);
+}
+[data-dashboard-role] .dashboard-content .bg-white.rounded-xl.border,
+[data-dashboard-role] .dashboard-content .bg-white.rounded-2xl.border {
+  border-color: rgba(221, 211, 255, 0.72);
+  box-shadow: 0 10px 30px rgba(56, 35, 105, 0.055);
+}
+[data-dashboard-role] .dashboard-content .bg-gray-50.rounded-xl,
+[data-dashboard-role] .dashboard-content .bg-gray-50.rounded-2xl {
+  background-color: rgba(247, 244, 255, 0.82);
+}
+[data-dashboard-role] .dashboard-content thead .bg-gray-50,
+[data-dashboard-role] .dashboard-content tr.bg-gray-50 {
+  background-color: rgba(247, 244, 255, 0.72);
 }
 

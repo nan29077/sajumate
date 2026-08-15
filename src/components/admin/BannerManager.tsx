@@ -219,7 +219,7 @@ export default function BannerManager({ initialBanners }: BannerManagerProps) {
                   value={form.linkUrl}
                   onChange={(e) => setForm({ ...form, linkUrl: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  placeholder="/campaigns 또는 외부 URL"
+                  placeholder="/live 또는 외부 URL"
                 />
               </div>
               <div>

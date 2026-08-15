@@ -6,7 +6,7 @@
 // 과거 순수 텍스트 description 도 그대로 읽히도록 파싱 실패 시 note 로 취급한다.
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, X, Loader2, Pencil, Trash2, Video, Phone, MapPin, Clock, Package } from "lucide-react";
+import { Plus, X, Loader2, Pencil, Trash2, Video, Phone, MapPin, Clock, BookOpenText } from "lucide-react";
 import SafeImage from "@/components/shared/SafeImage";
 import ImageUploader from "@/components/shared/ImageUploader";
 import { DEFAULT_PRODUCT_IMAGE } from "@/lib/defaults";
@@ -180,16 +180,16 @@ export default function SellerConsultProducts({ initialProducts }: { initialProd
   };
 
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="dashboard-page">
       {/* 상단 */}
-      <div className="flex items-center justify-between">
+      <div className="dashboard-page-header flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-bold text-gray-700">등록된 상담상품</h2>
-          <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">{products.length}개</span>
+          <span className="dashboard-icon-tile"><BookOpenText size={18} /></span>
+          <div><h2 className="text-sm font-bold text-brand-950">등록된 상담상품</h2><p className="text-[10px] text-gray-400">총 {products.length}개</p></div>
         </div>
         <button
           onClick={openCreate}
-          className="text-[12px] px-3 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 flex items-center gap-1 font-bold transition-colors whitespace-nowrap"
+          className="btn-primary min-h-10 px-3 py-2 text-[12px] whitespace-nowrap"
         >
           <Plus size={14} strokeWidth={1.8} /> 상담상품 등록
         </button>
@@ -197,13 +197,13 @@ export default function SellerConsultProducts({ initialProducts }: { initialProd
 
       {/* 목록 */}
       {products.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 bg-white rounded-xl border border-gray-100">
-          <Package size={40} strokeWidth={1.5} className="mx-auto mb-3 opacity-30" />
+        <div className="dashboard-empty dashboard-panel">
+          <BookOpenText size={40} strokeWidth={1.5} className="mx-auto mb-3 text-brand-200" />
           <p className="text-sm">등록된 상담상품이 없습니다</p>
           <p className="text-xs mt-1">영상·전화·방문 상담을 등록해 고객이 예약할 수 있게 해보세요.</p>
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 bg-brand-500 text-white text-xs font-bold rounded-lg hover:bg-brand-600"
+            className="btn-primary mt-4 px-4 py-2 text-xs"
           >
             <Plus size={14} strokeWidth={1.8} /> 상담상품 등록
           </button>
@@ -217,7 +217,7 @@ export default function SellerConsultProducts({ initialProducts }: { initialProd
             return (
               <div
                 key={p.id}
-                className={`bg-white rounded-xl border p-3 flex items-center gap-3 transition-all ${p.isActive ? "border-gray-100" : "border-gray-100 opacity-60"}`}
+                className={`dashboard-panel p-3 flex items-center gap-3 transition-all ${p.isActive ? "" : "opacity-60"}`}
               >
                 <div className="w-14 h-14 rounded-lg bg-gray-50 overflow-hidden shrink-0">
                   <SafeImage

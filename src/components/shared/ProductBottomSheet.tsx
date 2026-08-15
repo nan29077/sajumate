@@ -172,20 +172,6 @@ export default function ProductBottomSheet({
       ? Math.round((1 - displayPrice / product.comparePrice) * 100)
       : 0;
 
-  const shippingLabel = product
-    ? product.freeShipping
-      ? "무료배송"
-      : product.freeShippingThreshold
-        ? `배송비 ${formatPrice(product.shippingFee)} · ${formatPrice(product.freeShippingThreshold)} 이상 무료`
-        : product.shippingFee > 0
-          ? `배송비 ${formatPrice(product.shippingFee)}`
-          : "무료배송"
-    : "";
-
-  const isFreeShipping = product
-    ? product.freeShipping || product.shippingFee === 0
-    : false;
-
   const effectiveSellerId = product?.defaultSellerId || sellerId || null;
 
   const cartClass =
@@ -314,12 +300,6 @@ export default function ProductBottomSheet({
 
               {/* 가격/정보 영역 */}
               <div className="px-4 pt-4 pb-2">
-                {/* 브랜드 뱃지 */}
-                {product.brandName && (
-                  <span className="inline-block text-[11px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full mb-2 tracking-wide">
-                    {product.brandName}
-                  </span>
-                )}
                 <div className="flex items-baseline gap-2 flex-wrap">
                   {discountPct > 0 && (
                     <span className="text-xl font-bold text-red-500">{discountPct}%</span>
@@ -526,7 +506,7 @@ export default function ProductBottomSheet({
                       onClick={notifySelectOption}
                       className={cartClass}
                     >
-                      장바구니
+                      예약함
                     </button>
                     <button
                       type="button"
@@ -540,7 +520,7 @@ export default function ProductBottomSheet({
                 ) : status === "loading" ? (
                   <>
                     <button type="button" disabled className={`${cartClass} opacity-50 cursor-not-allowed`}>
-                      장바구니
+                      예약함
                     </button>
                     <button
                       type="button"
@@ -558,7 +538,7 @@ export default function ProductBottomSheet({
                       onClick={() => setGuestModalOpen(true)}
                       className={cartClass}
                     >
-                      장바구니
+                      예약함
                     </button>
                     <button
                       type="button"

@@ -3,14 +3,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
-import {  } from 'lucide-react';
 import ShareButton from "@/components/shared/ShareButton";
 import SafeImage from "@/components/shared/SafeImage";
 import ProductBuySection from "@/components/shared/ProductBuySection";
 import ProductImageGallery from "@/components/shared/ProductImageGallery";
 import ProductDetailTabs from "@/components/shared/ProductDetailTabs";
-import { getFeatureFlags } from "@/lib/settings";
-import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -21,12 +18,6 @@ export default async function ProductDetailPage({
   params: Promise<{ id: string }> | { id: string };
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }> | { [key: string]: string | string[] | undefined };
 }) {
-  const [{ groupBuy: FEATURE_GROUP_BUY }, session] = await Promise.all([
-    getFeatureFlags(),
-    auth(),
-  ]);
-  // 브랜드 계정: 자신이 등록한 공급가(supplyPrice)만 표시, 중간관리자 마진 포함 가격 비노출
-  const isBrandAdmin = false;
   // Next.js 14.2+ 에서 params는 Promise일 수 있음
   const resolvedParams = await Promise.resolve(params);
   const resolvedSearchParams = searchParams ? await Promise.resolve(searchParams) : {};
@@ -58,11 +49,6 @@ export default async function ProductDetailPage({
           include: { user: { select: { name: true, avatar: true } } },
           orderBy: { createdAt: "desc" },
           take: 10,
-        },
-        campaigns: {
-          where: { status: "ACTIVE" },
-          include: { seller: { select: { id: true, shopName: true, shopLogo: true, slug: true, category: true } } },
-          take: 3,
         },
         sellerProducts: {
           where: { isActive: true },
@@ -97,27 +83,8 @@ export default async function ProductDetailPage({
 
   // 라이브에서 진입 시 sellerIdFromUrl을 최우선 적용 (상담사 미등록 상담상품도 구매 가능하도록)
   const defaultSellerId = sellerIdFromUrl
-    || product.campaigns[0]?.sellerId
     || product.sellerProducts[0]?.sellerId
     || null;
-
-  // Serialize campaign data to plain objects.
-  // 단체 상담 기능 비활성 기간에는 캠페인 진입을 모두 차단해 일반 상담상품처럼만 노출.
-  const campaigns = FEATURE_GROUP_BUY
-    ? product.campaigns.map(c => ({
-        id: c.id,
-        title: c.title,
-        sellerId: c.sellerId,
-        campaignPrice: Number(c.campaignPrice) || 0,
-        participantCount: c.participantCount,
-        seller: {
-          shopName: c.seller.shopName,
-          shopLogo: c.seller.shopLogo,
-          slug: c.seller.slug,
-          category: c.seller.category,
-        },
-      }))
-    : [];
 
   // Serialize variant data
   const variants = product.variants.map(v => ({
@@ -152,12 +119,8 @@ export default async function ProductDetailPage({
     : sellerIdFromUrl
       ? sellerProducts.find(sp => sp.sellerId === sellerIdFromUrl)
       : null;
-  // 브랜드 계정: 중간관리자 마진이 반영된 basePrice 대신 자신이 등록한 supplyPrice를 표시
-  const displayPrice = isBrandAdmin
-    ? (product.supplyPrice != null ? Number(product.supplyPrice) : 0)
-    : (refSellerProduct?.sellerPrice ?? basePrice);
-  // 브랜드 계정에는 정가(comparePrice) 및 할인율 표시 안 함
-  const effectiveComparePrice = isBrandAdmin ? null : comparePrice;
+  const displayPrice = refSellerProduct?.sellerPrice ?? basePrice;
+  const effectiveComparePrice = comparePrice;
   const discountPercent = effectiveComparePrice && effectiveComparePrice > displayPrice
     ? Math.round((1 - displayPrice / effectiveComparePrice) * 100)
     : 0;
@@ -195,13 +158,8 @@ export default async function ProductDetailPage({
       {/* ── Product Images Gallery (Client Component) ── */}
       <ProductImageGallery images={allImages} productName={product.name} />
 
-      {/* ── Brand & Name ── */}
+      {/* ── 상담상품명 ── */}
       <div className="px-4 pt-5 pb-3">
-        {false && (
-          <p className="text-xs text-gray-400 tracking-wide uppercase mb-1">
-            {product.brand.brandName}
-          </p>
-        )}
         <h1 className="text-[17px] font-semibold text-gray-900 leading-snug">
           {product.name}
         </h1>
@@ -228,7 +186,7 @@ export default async function ProductDetailPage({
             <span className="text-xl font-bold text-red-500">{discountPercent}%</span>
           )}
           <span className="text-xl font-bold text-gray-900">
-            {isBrandAdmin ? `공급가 ${formatPrice(displayPrice)}` : formatPrice(displayPrice)}
+            {formatPrice(displayPrice)}
           </span>
           {discountPercent > 0 && effectiveComparePrice && (
             <span className="text-sm text-gray-400 line-through">
@@ -240,40 +198,6 @@ export default async function ProductDetailPage({
 
       <div className="h-2 bg-gray-50" />
 
-      {/* ── Active Campaign (Group Buy) ── */}
-      {campaigns.length > 0 && (
-        <>
-          <div className="px-4 py-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-              <h2 className="text-[15px] font-bold text-gray-900">단체 상담</h2>
-            </div>
-            <div className="space-y-2">
-              {campaigns.map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/campaigns/${c.id}`}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white">
-                    <SafeImage src={c.seller.shopLogo} alt={c.seller.shopName} width={40} height={40} fallbackText={c.seller.shopName.charAt(0)} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">{c.seller.shopName}</p>
-                    <p className="text-xs text-gray-400 truncate">{c.title}</p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-bold text-gray-900">{formatPrice(c.campaignPrice)}</p>
-                    <p className="text-[10px] text-gray-400">{c.participantCount}명 참여</p>
-                  </div>
-                  <Icon name="ChevronDown" size={16} className="text-gray-300 flex-shrink-0 -rotate-90" />
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div className="h-2 bg-gray-50" />
-        </>
-      )}
 
       {/* ── 상담 안내 ── */}
       <div className="px-4 py-4">
@@ -299,7 +223,7 @@ export default async function ProductDetailPage({
         variants={variants}
         optionGroups={optionGroups}
         defaultSellerId={defaultSellerId}
-        campaign={campaigns[0] || null}
+        campaign={null}
         fromLive={fromLive}
         productName={product.name}
       >

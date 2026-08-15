@@ -11,12 +11,12 @@ export async function POST(req: NextRequest) {
   if (!seller) return NextResponse.json({ error: "상담사 프로필 없음" }, { status: 404 });
 
   const body = await req.json();
-  const { groupBuy, content, liveCommerce } = body;
+  const { content, liveCommerce } = body;
 
   await prisma.sellerProfile.update({
     where: { id: seller.id },
     data: {
-      featureGroupBuy: Boolean(groupBuy),
+      featureGroupBuy: false,
       featureContent: Boolean(content),
       featureLiveCommerce: Boolean(liveCommerce),
     },
@@ -36,7 +36,6 @@ export async function GET() {
   });
 
   return NextResponse.json({
-    groupBuy: seller?.featureGroupBuy ?? true,
     content: seller?.featureContent ?? true,
     liveCommerce: seller?.featureLiveCommerce ?? false,
   });

@@ -171,9 +171,6 @@ export default function ProductDetailModal({ productId, productName, triggerClas
 
                   {/* 상담상품 기본 정보 */}
                   <div className="bg-gray-50 rounded-2xl p-4 space-y-2.5">
-                    {data.brand && (
-                      <span className="text-[10px] text-purple-500 bg-purple-50 px-2 py-0.5 rounded-full inline-block">{data.brand.brandName}</span>
-                    )}
                     <p className="text-[15px] font-bold text-gray-900 leading-snug">{data.name}</p>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {data.category && (

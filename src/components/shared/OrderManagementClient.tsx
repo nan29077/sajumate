@@ -462,7 +462,6 @@ function buildOrderSheetsHtml(orders: Order[], opts?: { autoPrint?: boolean; ran
         <tr><th>예약일시</th><td>${formatDateTime(o.createdAt)}</td><th>결제일시</th><td>${formatDateTime(o.paidAt || null)}</td></tr>
         <tr><th>예약상태</th><td>${STATUS_LABEL[o.status] || escapeHtml(o.status)}</td><th>결제수단</th><td>${escapeHtml(paymentMethodLabel(o.paymentMethod))}</td></tr>
         <tr><th>예약자</th><td>${escapeHtml(o.userName)}</td><th>상담사</th><td>${escapeHtml(o.sellerName)}</td></tr>
-        ${o.campaignTitle ? `<tr><th>단체 상담</th><td colspan="3">${escapeHtml(o.campaignTitle)}</td></tr>` : ""}
       </table>
 
       <h2>예약 정보</h2>
@@ -567,7 +566,6 @@ export default function OrderManagementClient({
   const [reservationStatusFilter, setReservationStatusFilter] = useState("all");
 
   const classifyOrder = (order: Order): OrderType => {
-    if (order.campaignId) return "groupbuy";
     if (order.discountType === "live") return "live";
     return "normal";
   };
@@ -673,7 +671,6 @@ export default function OrderManagementClient({
 
   const getTypeBadge = (order: Order) => {
     const t = classifyOrder(order);
-    if (t === "groupbuy") return <span className="text-[9px] font-bold bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full border border-emerald-100">단체 상담</span>;
     if (t === "live") return <span className="text-[9px] font-bold bg-pink-50 text-pink-600 px-1.5 py-0.5 rounded-full border border-pink-100">라이브</span>;
     return <span className="text-[9px] font-bold bg-gray-50 text-gray-500 px-1.5 py-0.5 rounded-full border border-gray-200">일반</span>;
   };
@@ -1105,11 +1102,6 @@ export default function OrderManagementClient({
                   <div className="border-t border-gray-50">
                     {/* Items */}
                     <div className="px-3 sm:px-4 py-3">
-                      {order.campaignTitle && (
-                        <p className="text-[10px] text-emerald-600 font-bold mb-2 flex items-center gap-1">
-                          <Icon name="Cart" size={10} /> 캠페인: {order.campaignTitle}
-                        </p>
-                      )}
                       {order.discountType === "live" && (
                         <p className="text-[10px] text-pink-600 font-bold mb-2 flex items-center gap-1">
                           <Icon name="Live" size={10} /> 라이브 상담 예약

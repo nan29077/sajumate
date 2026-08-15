@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import SafeImage from "@/components/shared/SafeImage";
 import { useAppDialog } from "@/components/shared/AppDialog";
 import BookingContactForm from "@/components/shared/BookingContactForm";
-import { useFeatureFlags } from "@/components/shared/FeatureFlagsProvider";
 import { useShopChrome } from "@/components/shared/ShopChromeProvider";
 
 interface CartItem {
@@ -45,7 +44,6 @@ const formatPrice = (n: number) => n.toLocaleString("ko-KR") + "원";
 export default function CartClient({ initialItems }: CartClientProps) {
   const router = useRouter();
   const { appAlert } = useAppDialog();
-  const { groupBuy: FEATURE_GROUP_BUY } = useFeatureFlags();
   // 점집 컨텍스트면 "상담 둘러보기/계속하기"는 메인이 아닌 해당 점집 홈으로 보낸다.
   const { shop } = useShopChrome();
   const shoppingHref = shop ? `/shop/${shop.slug}` : "/";
@@ -214,7 +212,7 @@ export default function CartClient({ initialItems }: CartClientProps) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             sellerId,
-            campaignId: group.campaignId,
+            campaignId: null,
             items: group.items.map((item) => ({
               productId: item.productId,
               variantId: item.variantId,
@@ -259,7 +257,7 @@ export default function CartClient({ initialItems }: CartClientProps) {
         <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900">
           <Icon name="ArrowRight" size={20} strokeWidth={1.5} className="rotate-180" />
         </button>
-        <h1 className="text-base font-bold text-gray-900">장바구니</h1>
+        <h1 className="text-base font-bold text-gray-900">상담 예약함</h1>
         <span className="text-xs text-gray-400">{items.length}개</span>
       </div>
     </div>
@@ -303,7 +301,7 @@ export default function CartClient({ initialItems }: CartClientProps) {
       <>{cartHeader}
       <div className="text-center py-20 px-4">
         <Icon name="Cart" size={48} strokeWidth={1.5} className="mx-auto mb-3 text-gray-300" />
-        <p className="text-sm text-gray-500">장바구니가 비어있습니다.</p>
+        <p className="text-sm text-gray-500">예약함이 비어있습니다.</p>
         <Link
           href={shoppingHref}
           className="inline-block mt-4 text-sm text-brand-600 hover:underline"
@@ -346,7 +344,7 @@ export default function CartClient({ initialItems }: CartClientProps) {
             {cartDiscountNudges.map((n, i) => (
               <p key={i} className="text-[11px] text-amber-700">
                 <Icon name="Cart" size={12} className="inline mr-1" />
-                <b>{formatPrice(n.remaining)}</b> 더 담으면 <b>{n.rate}% 장바구니 할인</b>을 받을 수 있어요!
+                <b>{formatPrice(n.remaining)}</b> 더 담으면 <b>{n.rate}% 묶음 예약 할인</b>을 받을 수 있어요!
               </p>
             ))}
           </div>
@@ -405,11 +403,6 @@ export default function CartClient({ initialItems }: CartClientProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start gap-1">
                     <p className="text-sm font-medium text-gray-900 truncate flex-1">{item.name}</p>
-                    {FEATURE_GROUP_BUY && item.isCampaign && (
-                      <span className="text-[9px] bg-brand-50 text-brand-600 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">
-                        공구
-                      </span>
-                    )}
                   </div>
                   {item.variantName && (
                     <p className="text-[11px] text-gray-400 mt-0.5">{item.variantName}</p>

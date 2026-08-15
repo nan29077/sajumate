@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter, X, CalendarClock } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
 interface Reservation {
@@ -26,7 +26,7 @@ interface Seller {
 }
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  PENDING:   { label: "예약 대기", color: "bg-yellow-50 text-yellow-700" },
+  PENDING:   { label: "예약 대기", color: "bg-moon-50 text-moon-700" },
   CONFIRMED: { label: "예약 확정", color: "bg-blue-50 text-blue-700" },
   COMPLETED: { label: "상담 완료", color: "bg-green-50 text-green-700" },
   CANCELLED: { label: "취소됨",   color: "bg-gray-100 text-gray-500" },
@@ -95,16 +95,19 @@ export default function AdminReservationsClient({
   });
 
   return (
-    <div className="p-0 md:p-6 max-w-6xl mx-auto min-w-0">
+    <div className="dashboard-page max-w-6xl mx-auto min-w-0">
       {/* 헤더 */}
-      <div className="flex items-center justify-between gap-3 mb-6">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">예약 조회</h1>
-          <p className="text-sm text-gray-500 mt-0.5">총 {reservations.length}건</p>
+      <div className="dashboard-page-header flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="dashboard-icon-tile"><CalendarClock size={19} /></span>
+          <div>
+          <h1 className="text-xl font-bold text-brand-950">예약 관리</h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">상담 일정과 처리 상태를 확인합니다 · 총 {reservations.length}건</p>
+          </div>
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+          className="dashboard-action"
         >
           <Filter size={15} />
           필터
@@ -113,14 +116,14 @@ export default function AdminReservationsClient({
 
       {/* 필터 패널 */}
       {showFilters && (
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4 space-y-3">
+        <div className="rounded-2xl border border-brand-100 bg-brand-50/50 p-4 space-y-3">
           <div className="grid grid-cols-1 min-[430px]:grid-cols-2 md:grid-cols-4 gap-3">
             <div>
               <label className="block text-xs text-gray-500 mb-1">상담사</label>
               <select
                 value={consultantId}
                 onChange={e => setConsultantId(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="input-field py-2 text-sm"
               >
                 <option value="">전체</option>
                 {sellers.map(s => <option key={s.id} value={s.id}>{s.shopName}</option>)}
@@ -131,7 +134,7 @@ export default function AdminReservationsClient({
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="input-field py-2 text-sm"
               >
                 {FILTER_TABS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
@@ -142,7 +145,7 @@ export default function AdminReservationsClient({
                 type="date"
                 value={dateFrom}
                 onChange={e => setDateFrom(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="input-field py-2 text-sm"
               />
             </div>
             <div>
@@ -151,20 +154,20 @@ export default function AdminReservationsClient({
                 type="date"
                 value={dateTo}
                 onChange={e => setDateTo(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="input-field py-2 text-sm"
               />
             </div>
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleApplyFilters}
-              className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm"
+              className="btn-primary px-4 py-2 text-sm"
             >
               적용
             </button>
             <button
               onClick={handleReset}
-              className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm"
+              className="btn-outline px-4 py-2 text-sm"
             >
               초기화
             </button>
@@ -173,14 +176,14 @@ export default function AdminReservationsClient({
       )}
 
       {/* 검색 */}
-      <div className="relative mb-4">
+      <div className="relative">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="고객명, 연락처, 예약번호, 상담사 검색"
-          className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm"
+          className="input-field pl-9 pr-9 py-2.5 text-sm"
         />
         {search && (
           <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -190,13 +193,13 @@ export default function AdminReservationsClient({
       </div>
 
       {/* 상태 탭 */}
-      <div className="flex gap-1 overflow-x-auto scrollbar-hide mb-4">
+      <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
         {FILTER_TABS.map((tab) => (
           <button
             key={tab.value}
             onClick={() => setStatusFilter(tab.value)}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              statusFilter === tab.value ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600"
+            className={`dashboard-tab flex-shrink-0 ${
+              statusFilter === tab.value ? "dashboard-tab-active" : ""
             }`}
           >
             {tab.label}
@@ -209,12 +212,39 @@ export default function AdminReservationsClient({
         ))}
       </div>
 
-      {/* 테이블 */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      {/* 모바일 예약 카드 */}
+      <div className="grid gap-3 md:hidden">
+        {filtered.length === 0 ? (
+          <div className="dashboard-empty dashboard-panel">조회된 예약이 없습니다.</div>
+        ) : filtered.map((r) => {
+          const s = STATUS_MAP[r.status] || { label: r.status, color: "bg-gray-100 text-gray-500" };
+          const date = new Date(r.reservationDate);
+          const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+          return (
+            <article key={r.id} className="dashboard-panel p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-brand-950">{r.customerName}</p>
+                  <p className="mt-0.5 truncate text-xs text-gray-500">{r.seller.shopName} · {r.items[0]?.productName || "상담"}</p>
+                </div>
+                <span className={`flex-none rounded-full px-2 py-1 text-[10px] font-semibold ${s.color}`}>{s.label}</span>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-brand-50/60 p-3 text-xs">
+                <div><p className="text-[10px] text-gray-400">상담 일시</p><p className="mt-0.5 font-semibold text-gray-700">{dateStr} {r.reservationTime}</p></div>
+                <div className="text-right"><p className="text-[10px] text-gray-400">결제 금액</p><p className="mt-0.5 font-bold text-brand-700">{formatPrice(r.finalAmount)}</p></div>
+              </div>
+              <p className="mt-2 text-[10px] text-gray-400">{r.reservationNumber} · {r.customerPhone}</p>
+            </article>
+          );
+        })}
+      </div>
+
+      {/* 데스크톱 테이블 */}
+      <div className="dashboard-panel hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
+              <tr className="bg-brand-50/60 border-b border-brand-100">
                 <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">예약번호</th>
                 <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">상담사</th>
                 <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">고객명</th>

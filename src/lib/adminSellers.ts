@@ -21,7 +21,7 @@ export async function getAdminSellers() {
         },
       },
       // orders(Reservation) 는 운영 DB 미반영 가능성이 있어 _count 에서 제외하고 별도 집계
-      _count: { select: { campaigns: true, shopProducts: true, fans: true, followers: true } },
+      _count: { select: { shopProducts: true, fans: true, followers: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -105,7 +105,6 @@ export async function getAdminSellers() {
       isRecommended: s.isRecommended,
       totalFans: s.totalFans,
       followersCount: s._count.followers,
-      campaignsCount: s._count.campaigns,
       shopProductsCount: s._count.shopProducts,
       fanCount: s._count.fans,
       ordersCount: ordersCountMap.get(s.id) ?? 0,

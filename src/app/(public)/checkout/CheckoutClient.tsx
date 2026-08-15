@@ -8,7 +8,6 @@ import { ArrowLeft, Minus, CreditCard, Smartphone, Landmark, X } from 'lucide-re
 import SafeImage from "@/components/shared/SafeImage";
 import { useAppDialog } from "@/components/shared/AppDialog";
 import BookingContactForm from "@/components/shared/BookingContactForm";
-import { useFeatureFlags } from "@/components/shared/FeatureFlagsProvider";
 
 interface CheckoutItem {
   // PRODUCT: 카탈로그 상담상품(Product) / DIRECT: 상담사 일반상담상품(DirectProduct)
@@ -200,7 +199,6 @@ function buildSmartropayForm(fields: Record<string, string>) {
 export default function CheckoutClient({ item }: { item: CheckoutItem }) {
   const router = useRouter();
   const { appAlert, appConfirm } = useAppDialog();
-  const { groupBuy: FEATURE_GROUP_BUY } = useFeatureFlags();
   const [quantity, setQuantity] = useState(item.quantity);
   const [ordering, setOrdering] = useState(false);
   const [contact, setContact] = useState({ name: "", phone: "", memo: "" });
@@ -383,7 +381,7 @@ export default function CheckoutClient({ item }: { item: CheckoutItem }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sellerId: item.sellerId,
-          campaignId: item.campaignId,
+          campaignId: null,
           items: [{
             itemType: item.itemType,
             productId: item.productId,
@@ -597,7 +595,7 @@ export default function CheckoutClient({ item }: { item: CheckoutItem }) {
           <div className="bg-gradient-to-r from-brand-50 to-purple-50 rounded-xl border border-brand-100 p-3">
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-gray-600 flex items-center gap-1">
-                <Icon name="Cart" size={10} className="text-brand-500" />장바구니 할인 ({cartDiscount!.rate}%)
+                <Icon name="Cart" size={10} className="text-brand-500" />묶음 예약 할인 ({cartDiscount!.rate}%)
               </span>
               <span className="text-brand-600 font-semibold">-{formatPrice(discountAmount)}</span>
             </div>
@@ -617,9 +615,6 @@ export default function CheckoutClient({ item }: { item: CheckoutItem }) {
               <p className="text-xs text-gray-400 mb-0.5">{item.sellerName}</p>
               <div className="flex items-start gap-1">
                 <p className="text-sm font-medium text-gray-900 truncate flex-1">{item.name}</p>
-                {FEATURE_GROUP_BUY && item.isCampaign && (
-                  <span className="text-[9px] bg-brand-50 text-brand-600 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">공구</span>
-                )}
               </div>
               {item.variantName && (
                 <p className="text-[11px] text-gray-400 mt-0.5">{item.variantName}</p>
@@ -628,7 +623,7 @@ export default function CheckoutClient({ item }: { item: CheckoutItem }) {
                 <p className="text-sm font-bold text-gray-900">{formatPrice(item.price)}</p>
                 {discountAmount > 0 && (
                   <span className="text-[9px] bg-brand-50 text-brand-600 px-1.5 py-0.5 rounded-full font-medium">
-                    장바구니 할인 {cartDiscount!.rate}%
+                    묶음 예약 할인 {cartDiscount!.rate}%
                   </span>
                 )}
               </div>
@@ -799,7 +794,7 @@ export default function CheckoutClient({ item }: { item: CheckoutItem }) {
             )}
             {cartDiscount && !cartDiscountEligible && (
               <p className="text-[10px] text-gray-400">
-                {formatPrice(cartDiscount.threshold - totalPrice)} 더 구매하면 {cartDiscount.rate}% 장바구니 할인
+                {formatPrice(cartDiscount.threshold - totalPrice)} 더 예약하면 {cartDiscount.rate}% 묶음 예약 할인
               </p>
             )}
             <div className="border-t border-gray-100 pt-2 mt-2">

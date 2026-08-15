@@ -720,7 +720,7 @@ export default function ChatBotManager({ onConfigSaved }: { onConfigSaved?: () =
           num={3}
           icon="ProductDetail_icon"
           title="상담상품 정보 자동 안내"
-          desc=""3번 상담상품 뭐예요?", "가격 얼마예요?", "예약 가능한가요?" 같은 질문에 라이브 상담상품 정보를 자동으로 안내해요."
+          desc="“3번 상담상품 뭐예요?”, “가격 얼마예요?”, “예약 가능한가요?” 같은 질문에 라이브 상담상품 정보를 자동으로 안내해요."
           on={config.productInfoEnabled}
           onToggle={() => patch({ productInfoEnabled: !config.productInfoEnabled })}
         />

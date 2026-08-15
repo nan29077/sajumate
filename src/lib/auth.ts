@@ -28,21 +28,33 @@ const providers: NextAuthConfig["providers"] = [
     async authorize(credentials) {
       if (!credentials?.email || !credentials?.password) return null;
 
-      const user = await prisma.user.findUnique({
-        where: { email: credentials.email as string },
-        include: {
-          sellerProfile: true,
-          buyerProfile: true,
-        },
-      });
+      let user: any;
+      try {
+        user = await prisma.user.findUnique({
+          where: { email: credentials.email as string },
+          include: {
+            sellerProfile: true,
+            buyerProfile: true,
+          },
+        });
+      } catch (e) {
+        console.error("[authorize] DB 조회 실패:", e);
+        return null;
+      }
 
       if (!user || !user.isActive) return null;
       if (!user.password) return null; // OAuth 만 가입한 사용자
 
-      const isValid = await bcrypt.compare(
-        credentials.password as string,
-        user.password,
-      );
+      let isValid = false;
+      try {
+        isValid = await bcrypt.compare(
+          credentials.password as string,
+          user.password,
+        );
+      } catch (e) {
+        console.error("[authorize] bcrypt.compare 실패:", e);
+        return null;
+      }
       if (!isValid) return null;
 
       // DB 레거시 역할(SELLER/BUYER 등)을 현행 3역할로 정규화

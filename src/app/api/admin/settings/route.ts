@@ -3,12 +3,8 @@ import { auth } from "@/lib/auth";
 import {
   getFeatureFlags,
   getSettlementBusinessDays,
-  getMiddleSettleDays,
-  getBrandSettleDays,
   setSettings,
   SETTLEMENT_BUSINESS_DAYS_KEY,
-  MIDDLE_SETTLE_DAYS_KEY,
-  BRAND_SETTLE_DAYS_KEY,
   DEFAULT_SETTLEMENT_BUSINESS_DAYS,
 } from "@/lib/settings";
 import { FEATURE_SETTING_KEYS, type FeatureFlags } from "@/lib/featureFlags";
@@ -23,13 +19,11 @@ export async function GET() {
     if (!session || session.user.role !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "권한이 없습니다" }, { status: 403 });
     }
-    const [flags, settlementBusinessDays, middleSettleDays, brandSettleDays] = await Promise.all([
+    const [flags, settlementBusinessDays] = await Promise.all([
       getFeatureFlags(),
       getSettlementBusinessDays(),
-      getMiddleSettleDays(),
-      getBrandSettleDays(),
     ]);
-    return NextResponse.json({ flags, settlementBusinessDays, middleSettleDays, brandSettleDays });
+    return NextResponse.json({ flags, settlementBusinessDays });
   } catch (error: any) {
     return NextResponse.json({ error: "설정을 불러올 수 없습니다" }, { status: 500 });
   }
@@ -57,8 +51,6 @@ export async function PUT(req: NextRequest) {
     // 정산일 (영업일 기준 N일 후) — 상담사/중간관리자/브랜드
     const dayFields: { bodyKey: string; settingKey: string }[] = [
       { bodyKey: "settlementBusinessDays", settingKey: SETTLEMENT_BUSINESS_DAYS_KEY },
-      { bodyKey: "middleSettleDays", settingKey: MIDDLE_SETTLE_DAYS_KEY },
-      { bodyKey: "brandSettleDays", settingKey: BRAND_SETTLE_DAYS_KEY },
     ];
     for (const f of dayFields) {
       if (body[f.bodyKey] !== undefined && body[f.bodyKey] !== null) {
@@ -74,17 +66,13 @@ export async function PUT(req: NextRequest) {
       await setSettings(entries);
     }
 
-    const [savedFlags, settlementBusinessDays, middleSettleDays, brandSettleDays] = await Promise.all([
+    const [savedFlags, settlementBusinessDays] = await Promise.all([
       getFeatureFlags(),
       getSettlementBusinessDays(),
-      getMiddleSettleDays(),
-      getBrandSettleDays(),
     ]);
     return NextResponse.json({
       flags: savedFlags,
       settlementBusinessDays,
-      middleSettleDays,
-      brandSettleDays,
       defaultSettlementBusinessDays: DEFAULT_SETTLEMENT_BUSINESS_DAYS,
     });
   } catch (error: any) {

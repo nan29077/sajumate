@@ -346,7 +346,7 @@ export default function SellerSettlementClient({
               <span className="font-semibold text-gray-800">{formatPrice(summary.totalGrossAmount)}</span>
             </div>
             <div className="flex items-center justify-between text-[11px]">
-              <span className="flex items-center gap-1 text-rose-500"><Icon name="Package" size={11} /> 공급가 차감 (브랜드 정산)</span>
+              <span className="flex items-center gap-1 text-rose-500"><Icon name="Settlement" size={11} /> 플랫폼 운영 정산</span>
               <span className="font-semibold text-rose-600">- {formatPrice(summary.totalSupplyAmount)}</span>
             </div>
             <div className="flex items-center justify-between text-[11px]">
@@ -642,7 +642,7 @@ export default function SellerSettlementClient({
                         </div>
                         {o.cartDiscountAmount > 0 && (
                           <div className="flex items-center justify-between text-[9px] text-rose-500">
-                            <span>장바구니 할인 부담</span>
+                            <span>묶음 예약 할인 부담</span>
                             <span>- {formatPrice(o.cartDiscountAmount)}</span>
                           </div>
                         )}
@@ -815,7 +815,7 @@ export default function SellerSettlementClient({
                           </div>
                           {o.cartDiscountAmount > 0 && (
                             <div className="flex items-center justify-between text-[11px] text-rose-500">
-                              <span>장바구니 할인 부담</span><span>- {formatPrice(o.cartDiscountAmount)}</span>
+                              <span>묶음 예약 할인 부담</span><span>- {formatPrice(o.cartDiscountAmount)}</span>
                             </div>
                           )}
                           <div className="flex items-center justify-between text-[11px] font-bold text-brand-600 pt-0.5">
@@ -854,7 +854,7 @@ export default function SellerSettlementClient({
                           </div>
                           {o.cartDiscountAmount > 0 && (
                             <div className="flex items-center justify-between text-[11px] text-rose-500">
-                              <span>장바구니 할인 부담</span><span>- {formatPrice(o.cartDiscountAmount)}</span>
+                              <span>묶음 예약 할인 부담</span><span>- {formatPrice(o.cartDiscountAmount)}</span>
                             </div>
                           )}
                           <div className="flex items-center justify-between text-[11px] font-bold text-brand-600 pt-0.5">
@@ -866,7 +866,7 @@ export default function SellerSettlementClient({
                   </div>
                   <p className="text-[10px] text-rose-500 mt-2 flex items-start gap-1">
                     <Icon name="Info" size={11} className="flex-shrink-0 mt-0.5" />
-                    공급가는 브랜드/관리자에게 별도 정산됩니다.
+                    플랫폼 운영분은 상담사 정산액과 분리해 계산됩니다.
                   </p>
                 </div>
               )}

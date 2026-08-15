@@ -18,7 +18,7 @@ export interface Seller {
   userName: string; userEmail: string; userImage: string | null;
   userPhone?: string | null; userCreatedAt?: string;
   isApproved: boolean; isRecommended: boolean; totalFans: number;
-  followersCount: number; shopProductsCount: number; campaignsCount: number; ordersCount: number;
+  followersCount: number; shopProductsCount: number; ordersCount: number;
   commissionRate: number | null;
   middleAdminId: string | null; middleAdminName: string | null; middleAdminMarginRate: number;
   createdAt: string;
@@ -170,25 +170,26 @@ export default function AdminSellersClient({
   };
 
   return (
-    <>
-      <div className="mb-5">
-        <h1 className="text-lg sm:text-xl font-bold text-gray-900">상담사 관리</h1>
-        <p className="text-xs sm:text-sm text-gray-500">
-          총 {sellers.length}명 · 승인 대기 {pending.length}명
-        </p>
+    <div className="dashboard-page">
+      <div className="dashboard-page-header flex items-center gap-3">
+        <span className="dashboard-icon-tile"><Icon name="Store" size={19} /></span>
+        <div>
+          <h1 className="text-lg sm:text-xl font-bold text-brand-950">상담사 관리</h1>
+          <p className="text-xs sm:text-sm text-gray-500">상담사 프로필과 승인 상태를 관리합니다 · 총 {sellers.length}명 · 승인 대기 {pending.length}명</p>
+        </div>
       </div>
 
       {pending.length > 0 && (
-        <div className="mb-5 rounded-xl border border-yellow-200 bg-yellow-50/60 p-3 sm:p-4">
+        <div className="rounded-2xl border border-moon-500/30 bg-moon-50/70 p-3 sm:p-4">
           <div className="flex items-center gap-1.5 mb-3">
-            <Icon name="Clock" size={15} className="text-yellow-600" />
-            <h2 className="text-sm font-bold text-gray-900">상담사 입점 신청</h2>
-            <span className="text-[10px] font-bold bg-yellow-500 text-white px-1.5 py-0.5 rounded-full">{pending.length}</span>
+            <Icon name="Clock" size={15} className="text-moon-700" />
+            <h2 className="text-sm font-bold text-brand-950">상담사 입점 신청</h2>
+            <span className="text-[10px] font-bold bg-moon-500 text-brand-950 px-1.5 py-0.5 rounded-full">{pending.length}</span>
           </div>
           <div className="space-y-2">
             {pending.map((seller) => (
-              <div key={seller.id} className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 bg-white rounded-lg border border-gray-100 p-2.5 sm:p-3">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-100 overflow-hidden flex-shrink-0">
+              <div key={seller.id} className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 bg-white rounded-xl border border-moon-500/20 p-2.5 sm:p-3">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-50 ring-2 ring-white overflow-hidden flex-shrink-0">
                   <SafeImage src={sellerAvatarSrc(seller)} alt={seller.shopName} width={40} height={40} fallbackText={seller.shopName.charAt(0)} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -205,34 +206,35 @@ export default function AdminSellersClient({
         </div>
       )}
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Icon name="Search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="상담사명, 이름, 이메일 검색..."
-            className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white" />
+            className="input-field pl-9 pr-8 py-2 text-sm" />
           {searchQuery && <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X size={14} /></button>}
         </div>
       </div>
 
       <div className="space-y-3">
         {filtered.length === 0 ? (
-          <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-gray-100">
+          <div className="dashboard-empty dashboard-panel">
+            <Icon name="Store" size={30} className="mb-2 text-brand-200" />
             <p className="text-sm">{searchQuery ? "검색 결과가 없습니다." : "등록된 상담사가 없습니다."}</p>
           </div>
         ) : pageItems.map((seller) => (
-          <div key={seller.id} className="bg-white rounded-xl border border-gray-100 p-3 sm:p-4">
+          <div key={seller.id} className="dashboard-panel p-3 sm:p-4 transition-colors hover:border-brand-200">
             <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center gap-2.5 sm:gap-3 mb-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-100 overflow-hidden flex-shrink-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-brand-50 ring-2 ring-brand-100 overflow-hidden flex-shrink-0">
                 <SafeImage src={sellerAvatarSrc(seller)} alt={seller.shopName} width={48} height={48} fallbackText={seller.shopName.charAt(0)} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <p className="text-[13px] sm:text-sm font-bold text-gray-900 truncate">{seller.shopName}</p>
-                  <span className={`text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full flex-shrink-0 ${seller.isApproved ? "bg-green-50 text-green-600" : "bg-yellow-50 text-yellow-600"}`}>
+                  <span className={`text-[9px] sm:text-[10px] font-medium px-1.5 sm:px-2 py-0.5 rounded-full flex-shrink-0 ${seller.isApproved ? "bg-green-50 text-green-600" : "bg-moon-50 text-moon-700"}`}>
                     {seller.isApproved ? "승인됨" : "대기중"}
                   </span>
-                  <span className="text-[9px] sm:text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 bg-indigo-50 text-indigo-600 flex items-center gap-0.5">
+                  <span className="text-[9px] sm:text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 bg-brand-50 text-brand-700 flex items-center gap-0.5">
                     <Icon name="Discount" size={9} />
                     {withVatRate(seller.commissionRate ?? 5)}% (부가세 포함)
                   </span>
@@ -242,7 +244,7 @@ export default function AdminSellersClient({
               <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto flex-shrink-0 flex-wrap justify-end">
                 <button
                   onClick={() => setDetailSeller(seller)}
-                  className="flex items-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
+                  className="dashboard-action min-h-8 px-2 py-1.5"
                 >
                   <Icon name="Info" size={12} /> 상세보기
                 </button>
@@ -252,7 +254,7 @@ export default function AdminSellersClient({
                 {!seller.isApproved && <RejectSellerButton sellerId={seller.id} sellerName={seller.shopName} />}
                 <button
                   onClick={() => setExpandedSeller(expandedSeller === seller.id ? null : seller.id)}
-                  className="text-xs px-2.5 py-1.5 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100"
+                  className="dashboard-action min-h-8 px-2.5 py-1.5"
                 >
                   {expandedSeller === seller.id ? "접기" : "마진 설정"}
                 </button>
@@ -265,11 +267,10 @@ export default function AdminSellersClient({
                 { label: "팔로워", value: seller.followersCount },
                 { label: "팬", value: seller.totalFans },
                 { label: "상담상품", value: seller.shopProductsCount },
-                { label: "캠페인", value: seller.campaignsCount },
                 { label: "예약", value: seller.ordersCount },
               ].map((stat) => (
-                <div key={stat.label} className="text-center py-1.5 sm:py-2 px-1 bg-gray-50 rounded-lg">
-                  <p className="text-[13px] sm:text-sm font-bold text-gray-900">{stat.value}</p>
+                <div key={stat.label} className="text-center py-1.5 sm:py-2 px-1 bg-brand-50/60 rounded-xl">
+                  <p className="text-[13px] sm:text-sm font-bold text-brand-950">{stat.value}</p>
                   <p className="text-[8px] sm:text-[9px] text-gray-400">{stat.label}</p>
                 </div>
               ))}
@@ -282,9 +283,9 @@ export default function AdminSellersClient({
                   <p className="text-[10px] text-emerald-600 mb-0.5">정산 가능</p>
                   <p className="text-[11px] font-bold text-emerald-700">{won(seller.settlementAvailable)}</p>
                 </div>
-                <div className="bg-orange-50 rounded-lg px-2.5 py-2 text-center">
-                  <p className="text-[10px] text-orange-500 mb-0.5">정산 예정</p>
-                  <p className="text-[11px] font-bold text-orange-600">{won(seller.settlementScheduled)}</p>
+                <div className="bg-moon-50 rounded-lg px-2.5 py-2 text-center">
+                  <p className="text-[10px] text-moon-700 mb-0.5">정산 예정</p>
+                  <p className="text-[11px] font-bold text-moon-700">{won(seller.settlementScheduled)}</p>
                 </div>
                 <div className="bg-gray-50 rounded-lg px-2.5 py-2">
                   <p className="text-[10px] text-gray-500 mb-0.5">합계</p>
@@ -312,7 +313,7 @@ export default function AdminSellersClient({
             </div>
 
             {expandedSeller === seller.id && (
-              <SellerMarginPanel seller={seller} middleAdmins={middleAdmins} />
+              <SellerMarginPanel seller={seller} />
             )}
           </div>
         ))}
@@ -352,16 +353,12 @@ export default function AdminSellersClient({
               <div className="flex items-center gap-2 text-gray-600"><Icon name="Mail" size={13} className="text-gray-400" /> {detailSeller.userEmail}</div>
               <div className="flex items-center gap-2 text-gray-600"><Icon name="Phone" size={13} className="text-gray-400" /> {detailSeller.userPhone || "연락처 미등록"}</div>
               <div className="flex items-center gap-2 text-gray-600"><Icon name="Calendar" size={13} className="text-gray-400" /> 가입일 {detailSeller.userCreatedAt ? new Date(detailSeller.userCreatedAt).toLocaleDateString("ko-KR") : "-"}</div>
-              {detailSeller.middleAdminName && (
-                <div className="flex items-center gap-2 text-gray-600"><Icon name="Settings" size={13} className="text-gray-400" /> 중간관리자: {detailSeller.middleAdminName}</div>
-              )}
             </div>
 
             <div className="mt-3 grid grid-cols-3 gap-1.5">
               {[
                 { label: "팔로워", value: detailSeller.followersCount },
                 { label: "팬", value: detailSeller.totalFans },
-                { label: "캠페인", value: detailSeller.campaignsCount },
               ].map((s) => (
                 <div key={s.label} className="text-center py-2 bg-gray-50 rounded-lg">
                   <p className="text-sm font-bold text-gray-900">{s.value}</p>
@@ -450,16 +447,14 @@ export default function AdminSellersClient({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
 function SellerMarginPanel({
   seller,
-  middleAdmins,
 }: {
   seller: Seller;
-  middleAdmins: MiddleAdminOption[];
 }) {
   const router = useRouter();
   const { appAlert } = useAppDialog();
@@ -549,33 +544,6 @@ function SellerMarginPanel({
         <p className="text-[10px] text-gray-400 mt-1.5">정산 시 판매액에서 이 수수료율(%)만큼 차감됩니다. 기본값 5%.</p>
       </div>
 
-      <div>
-        <p className="text-xs font-semibold text-gray-700 flex items-center gap-1.5 mb-2.5">
-          <Icon name="Settings" size={13} className="text-gray-500" />
-          중간관리자 마진 정책
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="block text-[11px] font-medium text-gray-600 mb-1">소속 중간관리자</label>
-            <select className="input-field text-sm" value={middleAdminId} onChange={(e) => setMiddleAdminId(e.target.value)}>
-              <option value="">지정 안 함</option>
-              {middleAdmins.map((m) => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-[11px] font-medium text-gray-600 mb-1">판매가 마진율 (%)</label>
-            <input type="number" min={0} step="0.01" className="input-field text-sm" placeholder="0"
-              value={rate} onChange={(e) => setRate(e.target.value)} />
-          </div>
-        </div>
-        <div className="flex justify-end mt-3">
-          <button onClick={handleSave} disabled={saving} className="btn-primary text-sm">
-            {saving ? "저장 중..." : "마진 정책 저장"}
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

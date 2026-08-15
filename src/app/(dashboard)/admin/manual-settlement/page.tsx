@@ -18,19 +18,7 @@ export default async function AdminManualSettlementPage() {
   });
 
   // (레거시 슬롯 — 미사용)
-  const middleAdminUsers = await prisma.user.findMany({
-    where: { role: "SUPER_ADMIN", isActive: true },
-    select: { id: true, name: true, email: true },
-    orderBy: { name: "asc" },
-  });
-
   // (레거시 슬롯 — 미사용)
-  const brandAdminUsers = await prisma.user.findMany({
-    where: { role: "SUPER_ADMIN", isActive: true },
-    select: { id: true, name: true, email: true },
-    orderBy: { name: "asc" },
-  });
-
   // 기존 수기 정산 내역 전체
   let settlements: any[] = [];
   try {
@@ -71,8 +59,6 @@ export default async function AdminManualSettlementPage() {
       <AdminFinanceNav />
       <AdminManualSettlementClient
         nodeUsers={nodeUsers}
-        middleAdminUsers={middleAdminUsers}
-        brandAdminUsers={brandAdminUsers}
         settlements={settlements}
       />
     </div>

@@ -35,7 +35,7 @@ const STATUS_TABS = [
 ] as const;
 
 const STATUS_BADGE: Record<SessionRow["status"], { label: string; cls: string }> = {
-  WAITING: { label: "대기", cls: "bg-amber-50 text-amber-600" },
+  WAITING: { label: "대기", cls: "bg-moon-50 text-moon-700" },
   ACTIVE: { label: "진행 중", cls: "bg-green-50 text-green-600" },
   COMPLETED: { label: "완료", cls: "bg-gray-100 text-gray-500" },
   CANCELLED: { label: "취소", cls: "bg-red-50 text-red-500" },
@@ -131,11 +131,12 @@ export default function AdminSessionsClient() {
 
   if (unavailable) {
     return (
-      <div className="p-6">
-        <h1 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <Video size={20} className="text-indigo-500" /> 영상 세션 관리
-        </h1>
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-sm text-amber-800">
+      <div className="dashboard-page">
+        <div className="dashboard-page-header flex items-center gap-3">
+          <span className="dashboard-icon-tile"><Video size={19} /></span>
+          <h1 className="text-lg font-bold text-brand-950">영상 세션 관리</h1>
+        </div>
+        <div className="bg-moon-50 border border-moon-500/30 rounded-2xl p-5 text-sm text-moon-700">
           영상 상담 세션 테이블이 아직 데이터베이스에 반영되지 않았습니다. 스키마 반영 후
           이용할 수 있습니다.
         </div>
@@ -144,15 +145,15 @@ export default function AdminSessionsClient() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-          <Video size={20} className="text-indigo-500" /> 영상 세션 관리
-          <span className="text-sm font-normal text-gray-400">총 {total}건</span>
-        </h1>
+    <div className="dashboard-page">
+      <div className="dashboard-page-header flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <span className="dashboard-icon-tile"><Video size={19} /></span>
+          <div><h1 className="text-lg font-bold text-brand-950">영상 세션 관리</h1><p className="text-xs text-gray-500 mt-0.5">실시간 상담 연결 상태를 확인합니다 · 총 {total}건</p></div>
+        </div>
         <button
           onClick={load}
-          className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50"
+          className="dashboard-action"
         >
           <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
           새로고침
@@ -161,15 +162,15 @@ export default function AdminSessionsClient() {
 
       {/* 필터 */}
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
           {STATUS_TABS.map((t) => (
             <button
               key={t.key}
               onClick={() => setStatus(t.key)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              className={`dashboard-tab whitespace-nowrap ${
                 status === t.key
-                  ? "bg-indigo-600 text-white"
-                  : "bg-white border border-gray-200 text-gray-600 hover:border-indigo-300"
+                  ? "dashboard-tab-active"
+                  : ""
               }`}
             >
               {t.label}
@@ -180,7 +181,7 @@ export default function AdminSessionsClient() {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-600"
+          className="input-field w-full sm:w-auto py-2 text-xs text-gray-600"
         />
         {date && (
           <button
@@ -194,13 +195,13 @@ export default function AdminSessionsClient() {
 
       {/* 목록 */}
       {loading && rows.length === 0 ? (
-        <div className="py-16 text-center text-sm text-gray-400">불러오는 중...</div>
+        <div className="dashboard-empty dashboard-panel">불러오는 중...</div>
       ) : rows.length === 0 ? (
-        <div className="py-16 text-center text-sm text-gray-400">
+        <div className="dashboard-empty dashboard-panel">
           해당 조건의 영상 세션이 없습니다.
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+        <div className="dashboard-panel overflow-x-auto">
           <table className="w-full text-xs min-w-[760px]">
             <thead>
               <tr className="border-b border-gray-100 text-gray-400 text-left">
@@ -264,7 +265,7 @@ export default function AdminSessionsClient() {
                     <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
                       <Link
                         href={`/admin/reservations?number=${row.reservation.reservationNumber}`}
-                        className="text-indigo-500 hover:underline"
+                        className="text-brand-600 hover:underline"
                       >
                         예약
                       </Link>

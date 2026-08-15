@@ -127,7 +127,7 @@ export default function SellerProductEditModal({ productId, onClose, onSaved }: 
                 <input type="text" className="input-field text-sm" placeholder="상담상품명을 입력하세요" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="text-xs font-semibold text-gray-700 mb-1.5 block">판매가격 <span className="text-red-500">*</span></label>
                   <div className="relative">
@@ -144,7 +144,7 @@ export default function SellerProductEditModal({ productId, onClose, onSaved }: 
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="text-xs font-semibold text-gray-700 mb-1.5 block">재고수량</label>
                   <div className="relative">
@@ -152,15 +152,7 @@ export default function SellerProductEditModal({ productId, onClose, onSaved }: 
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">개</span>
                   </div>
                 </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-700 mb-1.5 block">배송비</label>
-                  <div className="relative">
-                    <input type="number" min="0" className="input-field text-sm pr-8" placeholder="0" value={form.shippingFee} onChange={(e) => setForm({ ...form, shippingFee: e.target.value })} />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">원</span>
-                  </div>
-                </div>
               </div>
-              <p className="text-[11px] text-gray-400 -mt-3">상담상품은 배송이 없으므로 배송비 항목은 비워두거나 0으로 두세요.</p>
 
               <div>
                 <label className="text-xs font-semibold text-gray-700 mb-1.5 block">상담상품설명</label>

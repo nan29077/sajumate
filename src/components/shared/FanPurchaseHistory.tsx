@@ -180,9 +180,6 @@ export default function FanPurchaseHistory({ userId, userName, reservationCount,
                                 <span className="text-gray-500 flex-shrink-0">{formatPrice(it.totalPrice)}</span>
                               </div>
                             ))}
-                            {o.campaignTitle && (
-                              <p className="text-[10px] text-emerald-600 mt-0.5">단체 상담: {o.campaignTitle}</p>
-                            )}
                           </div>
                         </div>
                         <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-50">

@@ -52,9 +52,11 @@ const TAG_SUGGESTIONS = [
 export default function ShopEditForm({
   initial,
   initialCustomization,
+  defaultBanner,
 }: {
   initial: ShopData;
   initialCustomization: ShopCustomization;
+  defaultBanner: string;
 }) {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -233,11 +235,11 @@ export default function ShopEditForm({
                 </button>
               </div>
             ) : (
-              <div className="w-full h-32 rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 mb-2">
-                <div className="text-center">
-                  <Icon name="Upload" size={20} className="mx-auto mb-1" />
-                  <p className="text-[10px]">배너 이미지 업로드</p>
-                </div>
+              <div className="relative w-full h-32 rounded-xl overflow-hidden bg-gray-100 border border-brand-100 mb-2">
+                <img src={defaultBanner} alt="자동 적용 기본 배너" className="w-full h-full object-cover" />
+                <span className="absolute left-2 top-2 rounded-full bg-black/55 px-2 py-1 text-[10px] font-semibold text-white backdrop-blur-sm">
+                  자동 배너 · 5종 중 적용
+                </span>
               </div>
             )}
             <ImageUploader
@@ -247,7 +249,7 @@ export default function ShopEditForm({
               compact
             />
             <p className="text-[10px] text-gray-400 mt-1">권장: 1200x400px, JPG/PNG</p>
-            <p className="text-[10px] text-blue-500 mt-0.5">점집 페이지 상단 전체 너비 배너 영역에 표시됩니다.</p>
+            <p className="text-[10px] text-brand-600 mt-0.5">직접 업로드하기 전에는 사주메이트 기본 배너 5종 중 하나가 자동 적용됩니다.</p>
           </div>
         </div>
 

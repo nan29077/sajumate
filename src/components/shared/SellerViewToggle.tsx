@@ -17,7 +17,6 @@ interface Seller {
   mood: string | null;
   totalFans: number;
   _count: {
-    campaigns: number;
     shopProducts: number;
     fans: number;
   };
@@ -105,11 +104,6 @@ function SellerGridCard({ seller }: { seller: Seller }) {
               <Icon name="Cart" size={12} strokeWidth={1.5} className="text-gray-400" /> 상담상품 {seller._count.shopProducts}
             </span>
           )}
-          {seller._count.campaigns > 0 && (
-            <span className="flex items-center gap-1 text-[11px] text-gray-500">
-              <Icon name="Megaphone" size={12} strokeWidth={1.5} className="text-gray-400" /> 공구 {seller._count.campaigns}
-            </span>
-          )}
         </div>
       </div>
     </Link>
@@ -138,9 +132,6 @@ function SellerListCard({ seller }: { seller: Seller }) {
           </span>
           {seller._count.shopProducts > 0 && (
             <span className="text-[11px] text-gray-400">상담상품 {seller._count.shopProducts}</span>
-          )}
-          {seller._count.campaigns > 0 && (
-            <span className="text-[11px] text-gray-400">공구 {seller._count.campaigns}</span>
           )}
         </div>
         {seller.mood && <p className="text-[10px] text-gray-300 mt-0.5 truncate">{seller.mood}</p>}

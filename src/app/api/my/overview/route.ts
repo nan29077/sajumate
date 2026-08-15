@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getFeatureFlags } from "@/lib/settings";
 import { safeQuery } from "@/lib/safeDb";
 
 export const dynamic = "force-dynamic";
@@ -19,9 +18,6 @@ export async function GET() {
     include: {
       buyerProfile: {
         include: {
-          referredBySeller: {
-            select: { id: true, shopName: true, slug: true, referralDiscountRate: true, pickDiscountRate: true },
-          },
           follows: {
             include: {
               seller: {
@@ -78,8 +74,6 @@ export async function GET() {
     where: { userId, usedAt: null, expiresAt: { gt: new Date() } },
   });
 
-  const flags = await getFeatureFlags();
-
   // Decimal → number 직렬화
   const wishlists = user.wishlists.map((w) => ({
     ...w,
@@ -97,7 +91,6 @@ export async function GET() {
     createdAt: o.createdAt.toISOString(),
   }));
 
-  const referredSeller = user.buyerProfile?.referredBySeller;
   const pickedSellers = user.buyerProfile?.follows || [];
 
   return NextResponse.json({
@@ -118,13 +111,5 @@ export async function GET() {
     })),
     gameCouponCount,
     sellerApplied: !!user.sellerProfile,
-    referredSeller: referredSeller
-      ? {
-          ...referredSeller,
-          referralDiscountRate: Number(referredSeller.referralDiscountRate),
-          pickDiscountRate: Number(referredSeller.pickDiscountRate),
-        }
-      : null,
-    flags,
   });
 }

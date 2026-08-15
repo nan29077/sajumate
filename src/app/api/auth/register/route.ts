@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const {
       name, email, password, role, gender, birthday, phone,
       zipCode, address1, address2,
-      sellerRef: sellerRefFromBody, referralCode,
+      sellerRef: sellerRefFromBody,
     } = await request.json();
 
     // 상담사 귀속은 URL ?ref= 에서 전달된 body 값만 신뢰한다.
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       await linkReferralForNewBuyer(prisma, {
         userId: user.id,
         sellerRef,
-        referralCode: typeof referralCode === "string" ? referralCode : null,
+        referralCode: null,
       });
       // 회원가입 환영 알림톡 — 카카오 승인 조건상 가입 즉시 1회만. 실패해도 가입 흐름에 영향 없음.
       await notifySignupWelcome({ name: nameTrimmed, phone: phoneNormalized, sellerRef }).catch((e) =>

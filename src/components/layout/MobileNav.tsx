@@ -22,7 +22,6 @@ function myPageHref(role?: string): string {
 // 하단 네비게이션을 숨길 경로 패턴
 const HIDDEN_PATHS = [
   /^\/products\/[^/]+$/,
-  /^\/campaigns\/[^/]+$/,
   /^\/cart$/,
   /^\/live\/[^/]+$/,
   // 점집은 공통 하단 네비를 숨기고 점집 전용 하단 네비(SellerShopBottomNav)를 사용.
@@ -32,7 +31,6 @@ const HIDDEN_PATHS = [
 const DASHBOARD_PATHS = [
   /^\/admin(\/|$)/,
   /^\/seller(\/|$)/,
-  /^\/brand(\/|$)/,
 ];
 
 export default function MobileNav() {

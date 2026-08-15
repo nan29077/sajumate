@@ -8,9 +8,9 @@ import SafeImage from "@/components/shared/SafeImage";
 import MyPageBottomMenu from "@/components/shared/MyPageBottomMenu";
 import { requireBuyerSession } from "@/lib/buyerGuard";
 import { safeQuery } from "@/lib/safeDb";
-import { pickBuyerAvatar, pickSajuAvatar } from "@/lib/defaults";
+import { pickSajuAvatar } from "@/lib/defaults";
 import { isSellerLive, sellerProfileImage } from "@/lib/sellerLive";
-import LiveBadge, { LIVE_RING_CLASS } from "@/components/shared/LiveBadge";
+import { LIVE_RING_CLASS, OnAirBadge } from "@/components/shared/LiveBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +36,7 @@ export default async function MyPage() {
               seller: {
                 select: {
                   id: true, shopName: true, slug: true, shopLogo: true, pickDiscountRate: true, isManualLive: true,
-                  user: { select: { avatar: true } },
+                  user: { select: { avatar: true, name: true } },
                   liveStreams: { where: { status: "LIVE" }, take: 1, select: { id: true, shareCode: true } },
                 },
               },
@@ -88,7 +88,7 @@ export default async function MyPage() {
         <div className="flex items-center gap-3">
           <div className="w-14 h-14 rounded-full bg-black/10 flex items-center justify-center text-gray-900 text-xl font-bold overflow-hidden">
             <img
-              src={user.avatar || pickBuyerAvatar(user.id, (user as any).gender)}
+              src={user.avatar || pickSajuAvatar(user.id)}
               alt={user.name}
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
@@ -152,8 +152,8 @@ export default async function MyPage() {
                     ? `/live/${seller.liveStreams[0].shareCode}`
                     : `/shop/${seller.slug}`;
                   return (
-                  <Link key={seller.id} href={liveHref} className="flex flex-col items-center flex-shrink-0 w-16 group">
-                    <div className="relative mb-1.5">
+                  <Link key={seller.id} href={liveHref} className="flex flex-col items-center flex-shrink-0 w-auto group">
+                    <div className="flex flex-col items-center gap-1 mb-1">
                       <div className={`w-14 h-14 rounded-full overflow-hidden bg-gray-100 ${live ? LIVE_RING_CLASS : "ring-2 ring-gray-100"}`}>
                         <SafeImage
                           src={sellerProfileImage(seller)}
@@ -164,9 +164,9 @@ export default async function MyPage() {
                           fallbackText={seller.shopName.charAt(0)}
                         />
                       </div>
-                      {live && <LiveBadge className="absolute -bottom-1 left-1/2 -translate-x-1/2" />}
+                      {live && <OnAirBadge />}
                     </div>
-                    <p className="text-[10px] font-medium text-gray-700 truncate w-full text-center">{seller.shopName}</p>
+                    <p className="text-[10px] font-medium text-gray-700 truncate max-w-[5rem]">{seller.user.name}</p>
                   </Link>
                   );
                 })}

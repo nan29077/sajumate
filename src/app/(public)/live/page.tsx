@@ -4,16 +4,17 @@ import { Icon } from '@/components/shared/Icon';
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { X, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import SafeImage from "@/components/shared/SafeImage";
 import { pickSajuAvatar } from "@/lib/defaults";
 import { useFeatureFlags } from "@/components/shared/FeatureFlagsProvider";
-import LiveBadge, { LIVE_RING_CLASS, OnAirBadge } from "@/components/shared/LiveBadge";
+import { LIVE_RING_CLASS, OnAirBadge } from "@/components/shared/LiveBadge";
 
 interface SellerCard {
   id: string;
   slug: string;
   shopName: string;
+  name: string | null;
   profileImage: string | null;
   mood: string | null;
   isLive: boolean;
@@ -27,22 +28,20 @@ export default function LiveSearchPage() {
   return <LiveSearchInner />;
 }
 
-// 방송 화면에 갔다가 돌아와도 검색 상태가 유지되도록 sessionStorage 에 검색어 저장
-const SEARCH_STORAGE_KEY = "live-menu-search-q";
-
 function LiveSearchInner() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SellerCard[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [noLinkPopup, setNoLinkPopup] = useState(false);
+  const [favLiveSellers, setFavLiveSellers] = useState<SellerCard[]>([]);
+  const [favLoading, setFavLoading] = useState(true);
 
   const runSearch = async (term: string) => {
     const q = term.trim();
     if (!q) return;
     setLoading(true);
     setSearched(true);
-    try { sessionStorage.setItem(SEARCH_STORAGE_KEY, q); } catch {}
     try {
       const res = await fetch(`/api/live/search-sellers?q=${encodeURIComponent(q)}`);
       const data = await res.json();
@@ -50,15 +49,13 @@ function LiveSearchInner() {
     } catch {} finally { setLoading(false); }
   };
 
-  // 마운트 시 저장된 검색어 복원 (뒤로가기·방송 화면 복귀 시 검색 결과 재조회)
+  // 마운트 시 찜한 상담사 중 현재 라이브 중인 분 조회
   useEffect(() => {
-    let saved: string | null = null;
-    try { saved = sessionStorage.getItem(SEARCH_STORAGE_KEY); } catch {}
-    if (saved && saved.trim()) {
-      setQuery(saved);
-      runSearch(saved);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetch("/api/live/my-live-picks")
+      .then(r => r.json())
+      .then(d => setFavLiveSellers(d.sellers || []))
+      .catch(() => {})
+      .finally(() => setFavLoading(false));
   }, []);
 
   const handleSearch = async () => {
@@ -68,10 +65,6 @@ function LiveSearchInner() {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSearch();
-  };
-
-  const handleNoLinkClick = () => {
-    setNoLinkPopup(true);
   };
 
   return (
@@ -121,6 +114,21 @@ function LiveSearchInner() {
       </div>
 
       <div className="px-4 py-4">
+        {/* 단골 상담사 라이브 중 섹션 (검색 전, 로그인한 유저에게만 표시) */}
+        {!searched && !favLoading && favLiveSellers.length > 0 && (
+          <div className="mb-6">
+            <p className="text-xs font-bold text-gray-500 mb-3 flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              단골 상담사 라이브 중
+            </p>
+            <div className="space-y-3">
+              {favLiveSellers.map(s => (
+                <SellerCardItem key={s.slug} s={s} onNoLink={() => setNoLinkPopup(true)} />
+              ))}
+            </div>
+          </div>
+        )}
+
         {!searched ? (
           <div className="text-center py-16">
             <Icon name="Live" size={48} className="mx-auto text-gray-200 mb-4" />
@@ -144,70 +152,8 @@ function LiveSearchInner() {
         ) : (
           <div className="space-y-3">
             <p className="text-xs text-gray-400 mb-3">상담사 {results.length}명을 찾았어요</p>
-            {results.map((s) => (
-              <div key={s.slug} className="bg-white rounded-xl border border-gray-100 p-4">
-                {s.isLive && s.liveShareCode ? (
-                  <Link
-                    href={`/live/${s.liveShareCode}`}
-                    className="flex items-center gap-3 hover:bg-gray-50 rounded-lg -mx-1 px-1 py-1 transition-colors"
-                  >
-                    <SellerCardAvatar s={s} />
-                    <SellerCardInfo s={s} />
-                  </Link>
-                ) : s.isLive && s.liveLink ? (
-                  <button
-                    onClick={() => window.open(s.liveLink!, "_blank")}
-                    className="flex items-center gap-3 w-full text-left hover:bg-gray-50 rounded-lg -mx-1 px-1 py-1 transition-colors"
-                  >
-                    <SellerCardAvatar s={s} />
-                    <SellerCardInfo s={s} />
-                  </button>
-                ) : s.isLive ? (
-                  <button
-                    onClick={handleNoLinkClick}
-                    className="flex items-center gap-3 w-full text-left hover:bg-gray-50 rounded-lg -mx-1 px-1 py-1 transition-colors"
-                  >
-                    <SellerCardAvatar s={s} />
-                    <SellerCardInfo s={s} />
-                  </button>
-                ) : (
-                  <Link
-                    href={`/shop/${s.slug}`}
-                    className="flex items-center gap-3 hover:bg-gray-50 rounded-lg -mx-1 px-1 py-1 transition-colors"
-                  >
-                    <SellerCardAvatar s={s} />
-                    <SellerCardInfo s={s} />
-                  </Link>
-                )}
-                {s.isLive && s.liveShareCode ? (
-                  <Link href={`/live/${s.liveShareCode}`} className="mt-3 w-full inline-flex items-center justify-center gap-1.5 bg-black text-white text-sm font-bold py-2.5 rounded-xl hover:bg-gray-900">
-                    라이브 바로가기
-                  </Link>
-                ) : s.isLive && s.liveLink ? (
-                  <button
-                    onClick={() => window.open(s.liveLink!, "_blank")}
-                    className="mt-3 w-full inline-flex items-center justify-center gap-1.5 bg-black text-white text-sm font-bold py-2.5 rounded-xl hover:bg-gray-900"
-                  >
-                    라이브 바로가기
-                  </button>
-                ) : s.isLive ? (
-                  <button
-                    onClick={handleNoLinkClick}
-                    className="mt-3 w-full inline-flex items-center justify-center gap-1.5 bg-red-400 text-white text-sm font-bold py-2.5 rounded-xl opacity-80"
-                  >
-                    <Icon name="Live" size={15} /> 라이브 링크 미연결
-                  </button>
-                ) : (
-                  <Link href={`/shop/${s.slug}`} className="mt-3 w-full inline-flex items-center justify-center gap-1.5 bg-gray-900 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-gray-800">
-                    상담사 점집으로 이동
-                  </Link>
-                )}
-                {s.isLive && (
-                  <Link href={`/shop/${s.slug}`} className="mt-2 w-full inline-flex items-center justify-center gap-1.5 bg-gray-100 text-gray-700 text-sm font-bold py-2.5 rounded-xl hover:bg-gray-200">
-                    라이브 점집 바로가기
-                  </Link>
-                )}
-              </div>
+            {results.map(s => (
+              <SellerCardItem key={s.slug} s={s} onNoLink={() => setNoLinkPopup(true)} />
             ))}
           </div>
         )}
@@ -216,15 +162,80 @@ function LiveSearchInner() {
   );
 }
 
+function SellerCardItem({ s, onNoLink }: { s: SellerCard; onNoLink: () => void }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-4">
+      {s.isLive && s.liveShareCode ? (
+        <Link
+          href={`/live/${s.liveShareCode}`}
+          className="flex items-center gap-3 hover:bg-gray-50 rounded-lg -mx-1 px-1 py-1 transition-colors"
+        >
+          <SellerCardAvatar s={s} />
+          <SellerCardInfo s={s} />
+        </Link>
+      ) : s.isLive && s.liveLink ? (
+        <button
+          onClick={() => window.open(s.liveLink!, "_blank")}
+          className="flex items-center gap-3 w-full text-left hover:bg-gray-50 rounded-lg -mx-1 px-1 py-1 transition-colors"
+        >
+          <SellerCardAvatar s={s} />
+          <SellerCardInfo s={s} />
+        </button>
+      ) : s.isLive ? (
+        <button
+          onClick={onNoLink}
+          className="flex items-center gap-3 w-full text-left hover:bg-gray-50 rounded-lg -mx-1 px-1 py-1 transition-colors"
+        >
+          <SellerCardAvatar s={s} />
+          <SellerCardInfo s={s} />
+        </button>
+      ) : (
+        <Link
+          href={`/shop/${s.slug}`}
+          className="flex items-center gap-3 hover:bg-gray-50 rounded-lg -mx-1 px-1 py-1 transition-colors"
+        >
+          <SellerCardAvatar s={s} />
+          <SellerCardInfo s={s} />
+        </Link>
+      )}
+      {s.isLive && s.liveShareCode ? (
+        <Link href={`/live/${s.liveShareCode}`} className="mt-3 w-full inline-flex items-center justify-center gap-1.5 bg-black text-white text-sm font-bold py-2.5 rounded-xl hover:bg-gray-900">
+          라이브 바로가기
+        </Link>
+      ) : s.isLive && s.liveLink ? (
+        <button
+          onClick={() => window.open(s.liveLink!, "_blank")}
+          className="mt-3 w-full inline-flex items-center justify-center gap-1.5 bg-black text-white text-sm font-bold py-2.5 rounded-xl hover:bg-gray-900"
+        >
+          라이브 바로가기
+        </button>
+      ) : s.isLive ? (
+        <button
+          onClick={onNoLink}
+          className="mt-3 w-full inline-flex items-center justify-center gap-1.5 bg-red-400 text-white text-sm font-bold py-2.5 rounded-xl opacity-80"
+        >
+          <Icon name="Live" size={15} /> 라이브 링크 미연결
+        </button>
+      ) : (
+        <Link href={`/shop/${s.slug}`} className="mt-3 w-full inline-flex items-center justify-center gap-1.5 bg-gray-900 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-gray-800">
+          상담사 점집으로 이동
+        </Link>
+      )}
+      {s.isLive && (
+        <Link href={`/shop/${s.slug}`} className="mt-2 w-full inline-flex items-center justify-center gap-1.5 bg-gray-100 text-gray-700 text-sm font-bold py-2.5 rounded-xl hover:bg-gray-200">
+          라이브 점집 바로가기
+        </Link>
+      )}
+    </div>
+  );
+}
+
 function SellerCardAvatar({ s }: { s: SellerCard }) {
   return (
-    <div className="relative flex-shrink-0">
+    <div className="flex-shrink-0">
       <div className={`w-14 h-14 rounded-full overflow-hidden bg-gray-50 ${s.isLive ? LIVE_RING_CLASS : "ring-2 ring-brand-100"}`}>
-        <SafeImage src={s.profileImage} placeholder={pickSajuAvatar(s.id)} alt={s.shopName} width={56} height={56} fallbackText={s.shopName.charAt(0)} />
+        <SafeImage src={s.profileImage} placeholder={pickSajuAvatar(s.id)} alt={s.name || s.shopName} width={56} height={56} fallbackText={(s.name || s.shopName).charAt(0)} />
       </div>
-      {s.isLive && (
-        <LiveBadge className="absolute -bottom-1 left-1/2 -translate-x-1/2" />
-      )}
     </div>
   );
 }
@@ -233,7 +244,7 @@ function SellerCardInfo({ s }: { s: SellerCard }) {
   return (
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-1.5">
-        <p className="text-sm font-bold text-gray-900 truncate">{s.shopName}</p>
+        <p className="text-sm font-bold text-gray-900 truncate">{s.name || s.shopName}</p>
         {s.isLive && <OnAirBadge />}
       </div>
       {s.mood && <p className="text-[11px] text-gray-400 truncate">{s.mood}</p>}

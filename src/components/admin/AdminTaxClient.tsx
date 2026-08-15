@@ -223,8 +223,6 @@ export default function AdminTaxClient({ sellerBusiness, sellerNonBusiness, bran
         {(
           [
             { key: "seller", label: "상담사", icon: "Store" },
-            { key: "brand", label: "브랜드", icon: "Official" },
-            { key: "middle", label: "중간관리자", icon: "Settings" },
           ] as const
         ).map((t) => (
           <button

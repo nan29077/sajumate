@@ -45,7 +45,7 @@ export default function HomeFinalCta({ sellerCtaLink }: { sellerCtaLink: string 
                 지금 바로<br />사주메이트를 시작하세요
               </h2>
               <p className="mt-3 text-[13px] text-gray-300 leading-relaxed">
-                좋아하는 상담사를 단골로 설정하고<br />라이브·단체 상담을 즐겨보세요.
+                좋아하는 상담사를 단골로 설정하고<br />라이브·영상 상담을 만나보세요.
               </p>
               <Link
                 href="/auth/register"
@@ -60,7 +60,7 @@ export default function HomeFinalCta({ sellerCtaLink }: { sellerCtaLink: string 
                 내 팬과 함께<br />나만의 점집을 열다
               </h2>
               <ul className="mt-4 space-y-1.5 text-left inline-block">
-                {["나만의 상담 서비스 등록 & 예약 관리", "상담 수익 정산 + 그룹 상담 캠페인", "라이브·단체 상담 판매 채널 제공"].map((t) => (
+                {["나만의 상담 서비스 등록 & 예약 관리", "상담 일정과 고객 문의 통합 관리", "라이브·영상 상담 채널 제공"].map((t) => (
                   <li key={t} className="flex items-center gap-2 text-[12.5px] text-gray-200">
                     <span className="w-4 h-4 rounded-full bg-brand-500 flex items-center justify-center flex-shrink-0">
                       <Icon name="Check" size={11} strokeWidth={3} className="text-black" />

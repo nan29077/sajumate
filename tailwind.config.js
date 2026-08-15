@@ -9,16 +9,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // 브랜드 컬러
+        // 레거시 별칭. 신규 UI에서는 brand/moon 토큰을 사용한다.
         volt: {
-          DEFAULT: "#F2A900",
-          50: "#FFF8E7",
+          DEFAULT: "#F2C66D",
+          50: "#FFF9EA",
         },
         obsidian: {
-          DEFAULT: "#050505",
+          DEFAULT: "#17102D",
         },
         crystal: {
-          DEFAULT: "#F5F5F5",
+          DEFAULT: "#F7F4FF",
         },
         brand: {
           50: "#f7f4ff",

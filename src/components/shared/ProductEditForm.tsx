@@ -337,7 +337,6 @@ export default function ProductEditForm({ backHref, mode = "admin" }: Props) {
               <label className="text-xs font-medium text-gray-600 mb-2 block">배지</label>
               <div className="flex flex-wrap gap-1.5">
                 {[
-                  { v: "FREE_SHIPPING", l: "무료상담", c: "bg-blue-50 text-blue-600" },
                   { v: "NEW", l: "신규", c: "bg-emerald-50 text-emerald-600" },
                   { v: "BEST", l: "베스트", c: "bg-orange-50 text-orange-600" },
                   { v: "HOT_DEAL", l: "특가", c: "bg-red-50 text-red-600" },
@@ -353,7 +352,7 @@ export default function ProductEditForm({ backHref, mode = "admin" }: Props) {
             </div>
 
             {/* 상담 방식 설정 */}
-            <div className="border border-gray-200 rounded-xl p-4 space-y-3.5">
+            {false && <div className="border border-gray-200 rounded-xl p-4 space-y-3.5">
               <label className="text-xs font-medium text-gray-600 flex items-center gap-1.5">
                 <Icon name="Truck" size={13} /> 상담 방식 설정
               </label>
@@ -382,10 +381,10 @@ export default function ProductEditForm({ backHref, mode = "admin" }: Props) {
                 <input type="number" min="0" className="input-field text-sm" placeholder="예: 3000"
                   value={shipping.remoteFee} onChange={e => setShipping(s => ({ ...s, remoteFee: e.target.value }))} />
               </div>
-            </div>
+            </div>}
 
             {/* 외부 최저가 (브랜드·관리자만 입력) */}
-            {!isSeller && (
+            {false && !isSeller && (
               <div className="border border-gray-200 rounded-xl p-4 space-y-3">
                 <label className="text-xs font-medium text-gray-600">외부 최저가 참고 <span className="text-gray-400">(선택)</span></label>
                 <div className="grid grid-cols-2 gap-3">

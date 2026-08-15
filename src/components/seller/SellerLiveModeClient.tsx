@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Radio, RefreshCw, Link2, Check } from "lucide-react";
+import { CalendarClock, RefreshCw, Link2, Check } from "lucide-react";
 
 interface LiveSlot {
   id: string;
@@ -98,29 +98,29 @@ export default function SellerLiveModeClient({ shopName, slug }: { shopName: str
   };
 
   return (
-    <div className="animate-fade-in space-y-6 max-w-4xl">
+    <div className="dashboard-page max-w-4xl">
       {/* 헤더 */}
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 flex items-center gap-2">
-            <Radio size={26} strokeWidth={1.8} className="text-red-500 animate-pulse" />
-            예약 현황
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
+      <div className="dashboard-page-header flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <span className="dashboard-icon-tile"><CalendarClock size={19} /></span>
+          <div>
+          <h1 className="text-xl sm:text-2xl font-black text-brand-950">예약 현황</h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
             {shopName} · {status?.date ?? localToday()} · 30초마다 자동 갱신
           </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={copyBookingLink}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50"
+            className="dashboard-action"
           >
             {copied ? <Check size={15} className="text-green-500" /> : <Link2 size={15} />}
             {copied ? "복사됨" : "예약 링크"}
           </button>
           <button
             onClick={() => { setLoading(true); load(); }}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-900 text-white text-sm font-medium"
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-brand-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700"
           >
             <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
             새로고침
@@ -135,11 +135,11 @@ export default function SellerLiveModeClient({ shopName, slug }: { shopName: str
       {/* 오늘 상담 현황 — 방송 중 한눈에 보이도록 크게 */}
       <div className="grid grid-cols-3 gap-3 sm:gap-4">
         {[
-          { label: "전체 상담 수", value: status?.totalSlots ?? 0, className: "bg-white border border-gray-100 text-gray-900" },
-          { label: "예약 완료", value: status?.reservedSlots ?? 0, className: "bg-gray-900 text-white" },
-          { label: "남은 자리", value: status?.availableSlots ?? 0, className: "bg-amber-400 text-black" },
+          { label: "전체 상담 수", value: status?.totalSlots ?? 0, className: "dashboard-stat text-brand-950" },
+          { label: "예약 완료", value: status?.reservedSlots ?? 0, className: "bg-gradient-to-br from-brand-600 to-brand-950 text-white shadow-[0_14px_30px_rgba(36,20,69,0.16)]" },
+          { label: "남은 자리", value: status?.availableSlots ?? 0, className: "border border-moon-500/25 bg-gradient-to-br from-moon-50 to-white text-brand-950" },
         ].map((s) => (
-          <div key={s.label} className={`rounded-2xl p-5 sm:p-7 text-center ${s.className}`}>
+          <div key={s.label} className={`rounded-2xl p-4 sm:p-7 text-center ${s.className}`}>
             <p className="text-xs sm:text-sm font-medium opacity-60 mb-1.5">{s.label}</p>
             <p className="text-4xl sm:text-6xl font-black tabular-nums leading-none">{s.value}</p>
           </div>
@@ -147,7 +147,7 @@ export default function SellerLiveModeClient({ shopName, slug }: { shopName: str
       </div>
 
       {/* 오늘 예약 가능 시간 타임라인 */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      <div className="dashboard-panel">
         <div className="px-5 py-3.5 border-b border-gray-50 flex items-center justify-between">
           <h2 className="text-base font-bold text-gray-900">오늘의 시간표</h2>
           {updatedAt && <span className="text-[11px] text-gray-300">갱신 {updatedAt}</span>}
@@ -165,9 +165,9 @@ export default function SellerLiveModeClient({ shopName, slug }: { shopName: str
                   key={s.id}
                   className={`rounded-xl px-3 py-3 border-2 ${
                     booked
-                      ? "bg-gray-900 border-gray-900 text-white"
+                      ? "bg-brand-950 border-brand-950 text-white"
                       : s.isAvailable
-                        ? "bg-amber-50 border-amber-200 text-gray-900"
+                        ? "bg-moon-50 border-moon-500/30 text-brand-950"
                         : "bg-gray-50 border-gray-100 text-gray-400"
                   }`}
                 >
@@ -183,7 +183,7 @@ export default function SellerLiveModeClient({ shopName, slug }: { shopName: str
       </div>
 
       {/* 최근 예약 알림 */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      <div className="dashboard-panel">
         <div className="px-5 py-3.5 border-b border-gray-50">
           <h2 className="text-base font-bold text-gray-900">최근 예약 알림</h2>
         </div>

@@ -22,7 +22,7 @@ export default async function CheckoutPage({
   const session = await auth();
   if (!session) redirect(getShopAwareLoginPath());
 
-  const { type, productId, variantId, sellerId, campaignId, quantity } = searchParams;
+  const { type, productId, variantId, sellerId, quantity } = searchParams;
   if (!productId || !sellerId) redirect("/");
 
   const qty = Math.max(1, parseInt(quantity || "1", 10) || 1);
@@ -95,35 +95,13 @@ export default async function CheckoutPage({
     }
   }
 
-  let campaignInfo: {
-    id: string;
-    title: string;
-    campaignPrice: number;
-  } | null = null;
-  if (campaignId) {
-    const campaign = await prisma.groupBuyCampaign.findUnique({
-      where: { id: campaignId },
-      select: { id: true, title: true, campaignPrice: true },
-    });
-    if (campaign) {
-      campaignInfo = {
-        id: campaign.id,
-        title: campaign.title,
-        campaignPrice: Number(campaign.campaignPrice),
-      };
-    }
-  }
-
   const seller = await prisma.sellerProfile.findUnique({
     where: { id: sellerId },
     select: { id: true, shopName: true },
   });
   if (!seller) redirect("/");
 
-  const price =
-    campaignInfo?.campaignPrice ??
-    variantInfo?.price ??
-    Number(product.basePrice);
+  const price = variantInfo?.price ?? Number(product.basePrice);
 
   const item = {
     itemType: "PRODUCT" as const,
@@ -134,11 +112,11 @@ export default async function CheckoutPage({
     sellerName: seller.shopName,
     variantId: variantInfo?.id || null,
     variantName: variantInfo?.name || null,
-    campaignId: campaignInfo?.id || null,
-    campaignTitle: campaignInfo?.title || null,
+    campaignId: null,
+    campaignTitle: null,
     price,
     quantity: qty,
-    isCampaign: !!campaignInfo,
+    isCampaign: false,
     // 상담 방식 설정 (상담상품 기준)
     shippingFee: 0,
     freeShipping: true,

@@ -16,7 +16,6 @@ interface SellerSale {
   totalQuantity: number;
   totalRevenue: number;
   isShopProduct: boolean;
-  campaignCount: number;
 }
 
 interface Props {
@@ -161,11 +160,6 @@ export default function ProductSalesDetail({ productId, productName, thumbnail, 
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                             {seller.isShopProduct && (
                               <span className="text-[9px] bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full">일반판매</span>
-                            )}
-                            {seller.campaignCount > 0 && (
-                              <span className="text-[9px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full">
-                                단체 상담 {seller.campaignCount}건
-                              </span>
                             )}
                           </div>
                         </div>

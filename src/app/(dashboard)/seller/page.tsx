@@ -52,7 +52,7 @@ function MethodBadge({ method }: { method: string | null }) {
 }
 
 export default async function SellerDashboard() {
-  const { beeDecoration: SHOW_BEES, liveCommerce: LIVE_ON } = await getFeatureFlags();
+  const { beeDecoration: SHOW_CELESTIAL_DECORATION, liveCommerce: LIVE_ON } = await getFeatureFlags();
   const session = await auth();
   if (!session) redirect("/auth/login");
   if (session.user?.role !== "CONSULTANT") redirect("/");
@@ -165,21 +165,22 @@ export default async function SellerDashboard() {
   const formatResvDate = (d: Date) => `${d.getUTCMonth() + 1}/${d.getUTCDate()}`;
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="dashboard-page">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="dashboard-page-header flex items-start justify-between gap-3">
         <div className="min-w-0 flex items-center gap-2">
+          <span className="dashboard-icon-tile hidden sm:inline-flex"><Icon name="Moon" size={19} /></span>
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900">상담사 대시보드</h1>
-            <p className="text-xs text-gray-400 mt-0.5">{seller.shopName} · {new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}</p>
+            <h1 className="text-lg sm:text-xl font-bold text-brand-950">상담사 대시보드</h1>
+            <p className="text-xs text-gray-500 mt-0.5">{seller.shopName} · {new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}</p>
           </div>
-          {SHOW_BEES && <Sparkles size={44} strokeWidth={1.3}
-            className="w-11 h-11 text-[#2d1b69] opacity-70 pointer-events-none select-none hidden sm:block" aria-hidden="true" />}
+          {SHOW_CELESTIAL_DECORATION && <Sparkles size={40} strokeWidth={1.3}
+            className="w-10 h-10 text-moon-500 opacity-70 pointer-events-none select-none hidden sm:block" aria-hidden="true" />}
         </div>
       </div>
 
       {/* My Shop URL */}
-      <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 p-3.5 sm:p-4">
+      <div className="bg-gradient-to-r from-brand-50 to-white rounded-2xl border border-brand-100 p-3.5 sm:p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-medium text-gray-500 mb-1">내 점집 주소</p>
@@ -190,7 +191,7 @@ export default async function SellerDashboard() {
       </div>
 
       {!seller.isApproved && (
-        <div className="p-3.5 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-700 flex items-center gap-2">
+        <div className="p-3.5 bg-moon-50 border border-moon-500/25 rounded-2xl text-xs text-moon-700 flex items-center gap-2">
           <Icon name="Clock" size={14} />
           상담사 승인 대기 중입니다. 관리자 승인 후 점집이 공개됩니다.
         </div>
@@ -198,23 +199,23 @@ export default async function SellerDashboard() {
 
       {/* 상단 통계 카드 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-        <div className="bg-gray-900 rounded-xl p-3 sm:p-4 text-white">
+        <div className="rounded-2xl p-3.5 sm:p-4 text-white bg-gradient-to-br from-brand-600 to-brand-950 shadow-[0_14px_30px_rgba(36,20,69,0.16)]">
           <CalendarCheck size={16} strokeWidth={1.5} className="text-white/50 mb-1.5" />
           <p className="text-xl sm:text-2xl font-bold">{todayReservationCount}<span className="text-xs font-normal text-white/50 ml-0.5">건</span></p>
           <p className="text-white/50 text-[10px] mt-0.5">오늘 예약</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-100 p-3 sm:p-4">
+        <div className="dashboard-stat">
           <CheckCircle2 size={16} strokeWidth={1.5} className="text-green-500 mb-1.5" />
           <p className="text-xl sm:text-2xl font-bold text-gray-900">{monthCompletedCount}<span className="text-xs font-normal text-gray-300 ml-0.5">건</span></p>
           <p className="text-gray-400 text-[10px] mt-0.5">이번 달 완료 상담</p>
         </div>
-        <Link href="/seller/reservations?status=PENDING" className="bg-amber-400 rounded-xl p-3 sm:p-4 text-black hover:bg-amber-300 transition-colors">
-          <Clock size={16} strokeWidth={1.5} className="text-black/50 mb-1.5" />
-          <p className="text-xl sm:text-2xl font-bold">{pendingCount}<span className="text-xs font-normal text-black/50 ml-0.5">건</span></p>
-          <p className="text-black/60 text-[10px] mt-0.5">대기 중 예약</p>
+        <Link href="/seller/reservations?status=PENDING" className="rounded-2xl border border-moon-500/25 bg-gradient-to-br from-moon-50 to-white p-3.5 sm:p-4 text-brand-950 hover:border-moon-500/40 transition-colors">
+          <Clock size={16} strokeWidth={1.5} className="text-moon-700 mb-1.5" />
+          <p className="text-xl sm:text-2xl font-bold">{pendingCount}<span className="text-xs font-normal text-gray-400 ml-0.5">건</span></p>
+          <p className="text-moon-700 text-[10px] mt-0.5">대기 중 예약</p>
         </Link>
-        <Link href="/seller/customers" className="bg-white rounded-xl border border-gray-100 p-3 sm:p-4 hover:border-gray-200 transition-colors">
-          <Users size={16} strokeWidth={1.5} className="text-pink-500 mb-1.5" />
+        <Link href="/seller/customers" className="dashboard-stat">
+          <Users size={16} strokeWidth={1.5} className="text-brand-500 mb-1.5" />
           <p className="text-xl sm:text-2xl font-bold text-gray-900">{seller._count.fans}<span className="text-xs font-normal text-gray-300 ml-0.5">명</span></p>
           <p className="text-gray-400 text-[10px] mt-0.5">총 단골 고객</p>
         </Link>
@@ -230,16 +231,16 @@ export default async function SellerDashboard() {
             { label: "이번달", value: monthSales },
             { label: "총 누적", value: revenue, accent: true },
           ].map((s) => (
-            <div key={s.label} className={`rounded-xl p-3 sm:p-4 ${s.accent ? "bg-amber-400 text-black" : "bg-white border border-gray-100"}`}>
-              <p className={`text-[9px] sm:text-[10px] font-medium mb-1 ${s.accent ? "text-black/60" : "text-gray-400"}`}>{s.label}</p>
-              <p className={`text-[13px] sm:text-base font-bold leading-tight break-all ${s.accent ? "text-black" : "text-gray-900"}`}>{formatPrice(s.value)}</p>
+            <div key={s.label} className={`rounded-2xl p-3.5 sm:p-4 ${s.accent ? "border border-moon-500/25 bg-gradient-to-br from-moon-50 to-white text-brand-950" : "dashboard-stat"}`}>
+              <p className={`text-[9px] sm:text-[10px] font-medium mb-1 ${s.accent ? "text-moon-700" : "text-gray-400"}`}>{s.label}</p>
+              <p className={`text-[13px] sm:text-base font-bold leading-tight break-all ${s.accent ? "text-brand-950" : "text-gray-900"}`}>{formatPrice(s.value)}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* 예약 현황 */}
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+      <div className="dashboard-panel">
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
           <h2 className="text-sm font-bold text-gray-900">예약 현황</h2>
           <Link href="/seller/reservations" className="text-[11px] text-gray-400 hover:text-gray-600">전체보기 →</Link>
@@ -281,7 +282,7 @@ export default async function SellerDashboard() {
           </div>
         ) : (
           <div className="text-center py-10">
-            <CalendarX2 size={28} strokeWidth={1.3} className="mx-auto text-gray-200 mb-2" />
+            <CalendarX2 size={28} strokeWidth={1.3} className="mx-auto text-brand-200 mb-2" />
             <p className="text-xs text-gray-400">아직 예약이 없습니다.</p>
           </div>
         )}
@@ -318,7 +319,7 @@ export default async function SellerDashboard() {
               ))}
             </div>
           ) : (
-            <div className="p-4 bg-white rounded-xl border border-gray-100 text-center">
+            <div className="dashboard-panel p-4 text-center">
               <p className="text-xs text-gray-400">진행 중인 라이브가 없습니다.</p>
             </div>
           )}
@@ -343,10 +344,10 @@ export default async function SellerDashboard() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-2.5 sm:gap-3 p-3 sm:p-3.5 bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all group"
+              className="dashboard-stat flex items-center gap-2.5 sm:gap-3 group"
             >
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gray-50 group-hover:bg-gray-100 flex items-center justify-center transition-colors flex-shrink-0">
-                <Icon name={item.icon} size={15} className="text-gray-500" />
+              <div className="dashboard-icon-tile">
+                <Icon name={item.icon} size={16} />
               </div>
               <div className="min-w-0">
                 <p className="text-[13px] font-semibold text-gray-800 group-hover:text-gray-900 truncate">{item.label}</p>

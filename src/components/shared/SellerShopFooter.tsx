@@ -2,7 +2,6 @@
 
 import { Icon } from '@/components/shared/Icon';
 import { useState, useEffect } from "react";
-;
 
 interface SellerShopFooterProps {
   sellerInfo: {
@@ -44,7 +43,7 @@ export default function SellerShopFooter({ sellerInfo }: SellerShopFooterProps) 
   ];
 
   return (
-    <footer className="mt-8 border-t border-gray-100 bg-gray-50">
+    <footer className="mt-8 border-t border-brand-100/70 bg-[#F1EEF8]">
       <div className="px-4 py-5 space-y-3">
         {/* ── 판매자(상담사) 사업자 정보 ── */}
         <div>

@@ -2,7 +2,7 @@
 
 import { Icon } from '@/components/shared/Icon';
 import { useEffect, useState } from "react";
-import { Bell, CreditCard, Send, CheckCircle, AlertCircle, Radio, Clock, Star, Calendar, FileText } from 'lucide-react';
+import { Bell, CreditCard, Send, Radio, Clock, Star, Calendar, FileText } from 'lucide-react';
 
 interface AlimtalkCharge {
   id: string;
@@ -51,11 +51,8 @@ const CHARGE_OPTIONS = [
 const TEMPLATES = [
   { id: "live-start", category: "방송시작", Icon: Radio, badgeColor: "bg-red-100 text-red-700", content: "{상담사명}님의 라이브 방송이 시작되었습니다! 지금 바로 참여하세요" },
   { id: "delivery", category: "상담 시작", Icon: Clock, badgeColor: "bg-blue-100 text-blue-700", content: "{상담사명}님과의 상담이 곧 시작됩니다. 예약 시간을 확인해 주세요." },
-  { id: "campaign-success", category: "단체 상담 성공", Icon: CheckCircle, badgeColor: "bg-green-100 text-green-700", content: "{캠페인명} 단체 상담이 목표 달성에 성공했습니다! 곧 상담 방식이 시작됩니다." },
-  { id: "campaign-fail", category: "단체 상담 실패", Icon: AlertCircle, badgeColor: "bg-red-100 text-red-700", content: "{캠페인명} 단체 상담이 미달로 종료되었습니다. 결제가 취소됩니다." },
   { id: "order-confirm", category: "예약확인", Icon: Calendar, badgeColor: "bg-purple-100 text-purple-700", content: "{상담상품명} 예약이 완료되었습니다. 예약번호: {예약번호}" },
   { id: "review-request", category: "후기요청", Icon: Star, badgeColor: "bg-yellow-100 text-yellow-700", content: "{상담상품명} 구매 후기를 남겨주시면 포인트를 드립니다!" },
-  { id: "campaign-deadline", category: "캠페인 마감임박", Icon: Clock, badgeColor: "bg-orange-100 text-orange-700", content: "{캠페인명} 단체 상담이 {시간}후 마감됩니다. 서두르세요!" },
 ];
 
 export default function AlimtalkClient() {

@@ -3,7 +3,6 @@
 import { Icon } from '@/components/shared/Icon';
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { useFeatureFlags } from "@/components/shared/FeatureFlagsProvider";
 
 interface BannerSlide {
   id: string;
@@ -49,7 +48,6 @@ interface HeroBannerSliderProps {
     imageUrl: string;
     linkUrl: string | null;
   }>;
-  liveCampaignCount?: number;
 }
 
 function BannerImage({
@@ -90,8 +88,7 @@ function BannerImage({
   );
 }
 
-export default function HeroBannerSlider({ banners, liveCampaignCount = 0 }: HeroBannerSliderProps) {
-  const { groupBuy: FEATURE_GROUP_BUY } = useFeatureFlags();
+export default function HeroBannerSlider({ banners }: HeroBannerSliderProps) {
   const slides: BannerSlide[] =
     banners && banners.length > 0
       ? banners.map((b, i) => ({
@@ -207,18 +204,6 @@ export default function HeroBannerSlider({ banners, liveCampaignCount = 0 }: Her
             자세히 보기
             <Icon name="ChevronDown" size={14} strokeWidth={1.5} className="-rotate-90" />
           </Link>
-          {FEATURE_GROUP_BUY && liveCampaignCount > 0 && (
-            <Link
-              href="/campaigns"
-              className="inline-flex items-center gap-1.5 text-[11px] font-medium text-white/70 hover:text-white transition-colors"
-            >
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
-              </span>
-              {liveCampaignCount}개 단체 상담 진행 중
-            </Link>
-          )}
         </div>
 
         {/* Progress bar style dots */}

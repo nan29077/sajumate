@@ -90,11 +90,11 @@ export async function POST(req: NextRequest) {
     const {
       name, description, basePrice, comparePrice, categoryId,
       thumbnail, detailContent, variants, images,
-      isGroupBuy, groupBuy, badges,
+      isGroupBuy, badges,
       supplyPrice,
       priceModel, sellerCommissionRate,
       optionGroups,
-      consultingType, consultingMethod, durationMinutes, maxDailySlots,
+      consultingType, consultingMethod, durationMinutes, maxDailySlots, allowLiveCommerce,
     } = body;
 
     if (!name || basePrice === undefined || basePrice === null || basePrice === "") {
@@ -106,14 +106,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "유효한 가격을 입력해주세요" }, { status: 400 });
     }
 
-    // Validate group buy fields
-    if (isGroupBuy && groupBuy) {
-      if (!groupBuy.campaignPrice || !groupBuy.startDate || !groupBuy.endDate) {
-        return NextResponse.json(
-          { error: "단체 상담 등록 시 가격, 시작일, 종료일은 필수입니다" },
-          { status: 400 }
-        );
-      }
+    if (isGroupBuy) {
+      return NextResponse.json({ error: "공동구매 상품은 더 이상 등록할 수 없습니다." }, { status: 410 });
     }
 
     const slug = name.toLowerCase().replace(/[^a-z0-9가-힣]/g, "-").replace(/-+/g, "-") + "-" + Date.now().toString(36);
@@ -166,7 +160,8 @@ export async function POST(req: NextRequest) {
       thumbnail: thumbnail || (images && images.length > 0 ? images[0] : null),
       isActive: true,
       isApproved,
-      allowGroupBuy: isGroupBuy ? true : false,
+      allowGroupBuy: false,
+      allowLiveCommerce: Boolean(allowLiveCommerce),
       badges: badges && Array.isArray(badges) && badges.length > 0 ? JSON.stringify(badges) : null,
       ...((optionGroups && Array.isArray(optionGroups) && optionGroups.length > 0)
         ? { optionGroups: JSON.stringify(optionGroups) } as any
@@ -225,31 +220,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Create group-buy campaign if requested
-    let campaign = null;
-    if (isGroupBuy && groupBuy && sellerProfile) {
-      campaign = await prisma.groupBuyCampaign.create({
-        data: {
-          productId: product.id,
-          sellerId: sellerProfile.id,
-          title: groupBuy.title || product.name,
-          campaignPrice: parseFloat(String(groupBuy.campaignPrice)),
-          originalPrice: parsedBasePrice,
-          goalQuantity: groupBuy.goalQuantity ? parseInt(String(groupBuy.goalQuantity)) : null,
-          minOrderQuantity: parseInt(String(groupBuy.minOrderQuantity || "1")) || 1,
-          maxOrderQuantity: groupBuy.maxOrderQuantity ? parseInt(String(groupBuy.maxOrderQuantity)) : null,
-          limitPerPerson: parseInt(String(groupBuy.limitPerPerson || "10")) || 10,
-          startDate: new Date(groupBuy.startDate),
-          endDate: new Date(groupBuy.endDate),
-          description: groupBuy.description || null,
-          bannerImage: groupBuy.bannerImage || null,
-          estimatedDelivery: groupBuy.estimatedDelivery ? new Date(groupBuy.estimatedDelivery) : null,
-          status: "SCHEDULED",
-        },
-      });
-    }
-
-    return NextResponse.json({ success: true, product, campaign });
+    return NextResponse.json({ success: true, product });
   } catch (e: any) {
     // 원인 파악을 위한 상세 로깅 (Prisma 코드/메시지 포함)
     console.error("[products/register] 상담상품 등록 실패:", {

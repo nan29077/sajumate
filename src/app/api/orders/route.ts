@@ -7,6 +7,9 @@ import { isMissingSchemaError } from "@/lib/safeDb";
 
 export const dynamic = "force-dynamic";
 
+// 운영 DB의 과거 정산 스키마를 보존하는 동안에도 신규 추천 커미션은 생성하지 않는다.
+const legacyReferralCommissionEnabled = () => false;
+
 // 예약 목록 조회
 export async function GET() {
   const session = await auth();
@@ -92,6 +95,10 @@ export async function POST(request: Request) {
 
   if (!sellerId || !Array.isArray(items) || items.length === 0) {
     return NextResponse.json({ error: "예약 정보가 올바르지 않습니다." }, { status: 400 });
+  }
+
+  if (campaignId) {
+    return NextResponse.json({ error: "종료된 공동구매 예약은 새로 생성할 수 없습니다." }, { status: 410 });
   }
 
   // 예약 필수 정보 — 날짜/시간/신청자
@@ -415,7 +422,8 @@ export async function POST(request: Request) {
     commRate: number;
     commAmount: number;
   } | null = null;
-  if (buyerProfile?.referredBySellerId) {
+  // 추천 커미션은 폐지되었다. 아래 호환 코드는 과거 스키마 제거 전까지 실행하지 않는다.
+  if (legacyReferralCommissionEnabled() && buyerProfile?.referredBySellerId) {
     const referredSeller = await prisma.sellerProfile.findUnique({
       where: { id: buyerProfile.referredBySellerId },
       select: { id: true, referralCommissionRate: true },
@@ -475,7 +483,7 @@ export async function POST(request: Request) {
       });
     }
 
-    if (commission) {
+    if (legacyReferralCommissionEnabled() && commission) {
       const commissionData = {
         sellerId: commission.sellerId,
         buyerUserId: session.user!.id,

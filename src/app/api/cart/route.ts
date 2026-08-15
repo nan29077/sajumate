@@ -12,7 +12,7 @@ export async function GET() {
   }
 
   const items = await prisma.cartItem.findMany({
-    where: { userId: session.user!.id },
+    where: { userId: session.user!.id, campaignId: null },
     include: {
       product: true,
       variant: true,
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
   }
 
-  const { productId, variantId, sellerId, campaignId, quantity = 1 } = await request.json();
+  const { productId, variantId, sellerId, quantity = 1 } = await request.json();
 
   if (!productId || !sellerId) {
     return NextResponse.json({ error: "필수 정보가 누락되었습니다." }, { status: 400 });
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       productId,
       variantId: variantId || null,
       sellerId,
-      campaignId: campaignId || null,
+      campaignId: null,
     },
   });
 
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       productId,
       variantId: variantId || null,
       sellerId,
-      campaignId: campaignId || null,
+      campaignId: null,
       quantity,
     },
   });

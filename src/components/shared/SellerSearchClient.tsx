@@ -26,7 +26,6 @@ interface Seller {
   mood: string | null;
   totalFans: number;
   _count: {
-    campaigns: number;
     shopProducts: number;
     fans: number;
   };

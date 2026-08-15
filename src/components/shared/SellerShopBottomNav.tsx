@@ -52,7 +52,7 @@ export default function SellerShopBottomNav({
     <>
       {/* 모바일 하단 네비 (md 미만) */}
       <nav
-        className="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 z-[60] bg-white border-t border-gray-100 w-full max-w-[480px]"
+        className="fixed bottom-0 left-1/2 z-[60] w-full max-w-[480px] -translate-x-1/2 border-t border-brand-100/70 bg-white/95 backdrop-blur-xl md:hidden"
         style={{
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
           WebkitTransform: "translateX(-50%) translateZ(0)",
@@ -73,12 +73,12 @@ export default function SellerShopBottomNav({
               className={cn(
                 "relative flex flex-col items-center justify-center gap-1 flex-1 py-1 min-h-[56px]",
                 "touch-manipulation select-none active:scale-95 transition-transform duration-75",
-                item.active ? "text-black" : "text-gray-400",
+                item.active ? "text-brand-700" : "text-gray-400",
               )}
               style={{ WebkitTapHighlightColor: "transparent" }}
             >
               {item.active && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-[2px] bg-black rounded-full" />
+                <span className="absolute left-1/2 top-0 h-[2px] w-7 -translate-x-1/2 rounded-full bg-brand-600" />
               )}
               <Icon
                 name={item.icon}
@@ -88,7 +88,7 @@ export default function SellerShopBottomNav({
               <span
                 className={cn(
                   "text-[12px] leading-tight",
-                  item.active ? "font-semibold text-black" : "font-normal",
+                  item.active ? "font-semibold text-brand-700" : "font-normal",
                 )}
               >
                 {item.label}
@@ -100,7 +100,7 @@ export default function SellerShopBottomNav({
 
       {/* PC 우측 세로 고정 네비 (md+) */}
       <nav
-        className="hidden md:flex fixed top-1/2 -translate-y-1/2 z-[60] flex-col items-center gap-1 py-4 px-2 bg-white/90 backdrop-blur-sm border border-amber-100 rounded-2xl shadow-md"
+        className="fixed top-1/2 z-[60] hidden -translate-y-1/2 flex-col items-center gap-1 rounded-2xl border border-brand-100 bg-white/90 px-2 py-4 shadow-md backdrop-blur-sm md:flex"
         style={{ left: "calc(50% + 248px)" }}
       >
         {items.map((item) => (
@@ -118,8 +118,8 @@ export default function SellerShopBottomNav({
             className={cn(
               "flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-colors",
               item.active
-                ? "bg-amber-50 text-amber-800"
-                : "text-gray-400 hover:bg-amber-50 hover:text-amber-600",
+                ? "bg-brand-50 text-brand-800"
+                : "text-gray-400 hover:bg-brand-50 hover:text-brand-600",
             )}
           >
             <Icon
@@ -133,7 +133,7 @@ export default function SellerShopBottomNav({
           </Link>
         ))}
 
-        <div className="w-6 h-px bg-amber-100 my-1" />
+        <div className="my-1 h-px w-6 bg-brand-100" />
 
         {session ? (
           <button
@@ -150,7 +150,7 @@ export default function SellerShopBottomNav({
           <Link
             href={loginPath}
             title="로그인"
-            className="flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl text-gray-400 hover:bg-amber-50 hover:text-amber-600 transition-colors"
+            className="flex h-14 w-14 flex-col items-center justify-center gap-1 rounded-xl text-gray-400 transition-colors hover:bg-brand-50 hover:text-brand-600"
           >
             <Icon name="Login" size={24} strokeWidth={1.5} />
             <span className="text-[11px] leading-tight font-medium">

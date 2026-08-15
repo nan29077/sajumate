@@ -129,7 +129,7 @@ export async function generateMetadata({
   const title = `${seller.shopName}의 점집 - 사주메이트`;
   const description =
     custom.tagline || seller.shopDescription || `${seller.shopName}에게 지금 상담을 예약하세요.`;
-  const image = seller.shopBanner || "/opengraph-image";
+  const image = resolveShopBanner(seller.shopBanner, seller.id);
 
   return {
     title,
@@ -157,7 +157,7 @@ export default async function SellerShopPage({
   if (!seller || !seller.isApproved) notFound();
 
   const customization = await getShopCustomization(seller.id);
-  const themeColor = seller.shopThemeColor || "#f5a700";
+  const themeColor = seller.shopThemeColor || "#6D4BC3";
   const avatar = resolveSellerDisplayImage(seller);
   const banner = resolveShopBanner(seller.shopBanner, seller.id);
 
@@ -272,7 +272,7 @@ export default async function SellerShopPage({
   const bookHref = `/shop/${seller.slug}/book`;
 
   return (
-    <div className="animate-fade-in bg-[#fdfaf0] min-h-screen">
+    <div className="animate-fade-in min-h-screen bg-[#F7F5FC] pb-2">
       <ShopContextSync shop={{ slug: seller.slug, name: seller.shopName, logo: avatar }} />
 
       <SellerShopHeader
@@ -286,51 +286,52 @@ export default async function SellerShopPage({
 
       {/* ───── 1. 상담사 프로필 헤더 ───── */}
       <section className="relative">
-        <div className="h-40 overflow-hidden bg-gray-200 relative">
-          <img src={banner} alt={`${seller.shopName} 배너`} className="w-full h-full object-cover" />
+        <div className="relative h-44 overflow-hidden bg-brand-950">
+          <img src={banner} alt={`${seller.shopName} 배너`} className="h-full w-full scale-[1.01] object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-950/10 via-transparent to-brand-950/55" />
           <div
             className="absolute inset-0"
-            style={{ background: `linear-gradient(to top, ${themeColor}33 0%, transparent 55%)` }}
+            style={{ background: `linear-gradient(to top, ${themeColor}35 0%, transparent 58%)` }}
           />
         </div>
 
-        <div className="relative px-4 -mt-12">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 pb-5">
+        <div className="relative -mt-11 px-4">
+          <div className="rounded-[26px] border border-white/80 bg-white/95 p-4 pb-5 shadow-[0_18px_45px_rgba(48,30,91,0.12)] backdrop-blur-sm">
             <div className="flex items-start gap-3">
               <div className="flex flex-col items-center flex-shrink-0 -mt-8">
                 <div
-                  className={`relative w-16 h-16 rounded-full overflow-hidden ring-4 bg-white shadow-md ${
+                  className={`relative h-[72px] w-[72px] overflow-hidden rounded-2xl bg-white shadow-md ring-4 ${
                     showLive ? LIVE_RING_CLASS : "ring-white"
                   }`}
                 >
                   <SafeImage
                     src={avatar}
                     alt={seller.shopName}
-                    width={64}
-                    height={64}
+                    width={72}
+                    height={72}
                     fallbackText={seller.shopName.charAt(0)}
                   />
                 </div>
               </div>
 
-              <div className="flex-1 min-w-0 pt-0.5">
+              <div className="min-w-0 flex-1 pt-0.5">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-bold text-gray-900 truncate">{seller.user.name || seller.shopName}</h1>
+                  <h1 className="truncate text-[18px] font-extrabold tracking-[-0.025em] text-brand-950">{seller.user.name || seller.shopName}</h1>
                   {showLive && <OnAirBadge />}
                 </div>
                 {customization.tagline && (
-                  <p className="text-[12px] text-gray-500 mt-0.5 line-clamp-2">{customization.tagline}</p>
+                  <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-gray-500">{customization.tagline}</p>
                 )}
               </div>
             </div>
 
             {/* 상담 분야 태그 */}
             {consultTags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
+              <div className="mt-3 flex flex-wrap gap-1.5">
                 {consultTags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-2 py-0.5 rounded-full text-[10px] font-semibold border"
+                    className="rounded-full border px-2.5 py-1 text-[10px] font-semibold"
                     style={{ color: themeColor, borderColor: `${themeColor}55`, backgroundColor: `${themeColor}12` }}
                   >
                     #{tag}
@@ -339,7 +340,7 @@ export default async function SellerShopPage({
               </div>
             )}
 
-            <div className="mt-4">
+            <div className="mt-3 border-t border-brand-50 pt-3">
               <ShopShareButton slug={seller.slug} shopName={seller.shopName} themeColor={themeColor} />
             </div>
           </div>
@@ -347,8 +348,8 @@ export default async function SellerShopPage({
       </section>
 
       {/* ───── 2. 내 예약 현황 ───── */}
-      <section className="px-4 mt-4">
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
+      <section className="mt-4 px-4">
+        <div className="rounded-3xl border border-brand-100/70 bg-white p-4 shadow-[0_8px_24px_rgba(56,35,105,0.05)]">
           <div className="flex items-center gap-1.5 mb-3">
             <CalendarDays size={15} strokeWidth={1.8} style={{ color: themeColor }} />
             <h2 className="text-sm font-bold text-gray-900">내 예약 현황</h2>
@@ -361,15 +362,18 @@ export default async function SellerShopPage({
               reservationTimeStr={myReservation.reservationTime}
             />
           ) : (
-            <div className="text-center py-4">
-              <p className="text-sm text-gray-400 mb-3">예약 내역이 없습니다</p>
+            <div className="flex items-center justify-between gap-3 rounded-2xl bg-brand-50/65 p-3.5">
+              <div>
+                <p className="text-[13px] font-semibold text-brand-950">새 상담을 예약해 보세요</p>
+                <p className="mt-0.5 text-[11px] text-gray-500">원하는 상담과 시간을 편하게 선택할 수 있어요.</p>
+              </div>
               <Link
                 href={bookHref}
-                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-extrabold text-[14px] text-white shadow-sm active:scale-[0.98] transition-transform"
+                className="flex flex-shrink-0 items-center justify-center gap-1.5 rounded-xl px-3.5 py-2.5 text-[12px] font-extrabold text-white shadow-sm transition-transform active:scale-[0.98]"
                 style={{ backgroundColor: themeColor }}
               >
-                <CalendarCheck size={17} strokeWidth={2} />
-                지금 예약하기
+                <CalendarCheck size={15} strokeWidth={2} />
+                예약하기
               </Link>
             </div>
           )}
@@ -383,8 +387,8 @@ export default async function SellerShopPage({
       </section>
 
       {/* ───── 3. 상담 메뉴 ───── */}
-      <section className="px-4 mt-4">
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
+      <section className="mt-4 px-4">
+        <div className="rounded-3xl border border-brand-100/70 bg-white p-4 shadow-[0_8px_24px_rgba(56,35,105,0.05)]">
           <div className="flex items-center gap-1.5 mb-1">
             <Sparkles size={15} strokeWidth={1.8} style={{ color: themeColor }} />
             <h2 className="text-sm font-bold text-gray-900">상담 메뉴</h2>
@@ -403,9 +407,9 @@ export default async function SellerShopPage({
                   <li key={p.id}>
                     <Link
                       href={`${bookHref}?productId=${p.id}`}
-                      className="flex items-center gap-3 p-3 rounded-2xl border border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm active:scale-[0.99] transition-all"
+                      className="flex items-center gap-3 rounded-2xl border border-transparent bg-[#FAF9FD] p-3 transition-all hover:border-brand-100 hover:bg-white hover:shadow-sm active:scale-[0.99]"
                     >
-                      <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 flex-shrink-0">
+                      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl bg-brand-50">
                         <SafeImage
                           src={p.thumbnail}
                           placeholder={DEFAULT_PRODUCT_IMAGE}
@@ -457,8 +461,8 @@ export default async function SellerShopPage({
 
       {/* ───── 4. 상세 소개 ───── */}
       {(customization.intro || seller.shopDescription) && (
-        <section className="px-4 mt-4">
-          <div className="bg-white rounded-2xl border border-gray-100 p-4">
+        <section className="mt-4 px-4">
+          <div className="rounded-3xl border border-brand-100/70 bg-white p-4 shadow-[0_8px_24px_rgba(56,35,105,0.05)]">
             <div className="flex items-center gap-1.5 mb-2">
               <Sparkles size={14} strokeWidth={1.8} style={{ color: themeColor }} />
               <h2 className="text-sm font-bold text-gray-900">{seller.shopName} 소개</h2>
@@ -471,7 +475,7 @@ export default async function SellerShopPage({
       )}
 
       {/* ───── 5. 예약 달력 ───── */}
-      <section className="px-4 mt-4">
+      <section className="mt-4 px-4">
         <ShopBookingCalendar
           sellerSlug={seller.slug}
           slots={daySlots}
@@ -482,8 +486,8 @@ export default async function SellerShopPage({
 
       {/* ───── 6. 콘텐츠 (feature 플래그) ───── */}
       {contents.length > 0 && (
-        <section className="px-4 mt-4">
-          <div className="bg-white rounded-2xl border border-gray-100 p-4">
+        <section className="mt-4 px-4">
+          <div className="rounded-3xl border border-brand-100/70 bg-white p-4 shadow-[0_8px_24px_rgba(56,35,105,0.05)]">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-gray-900">상담사 콘텐츠</h2>
               <Link href="/content" className="text-[11px] text-gray-400 hover:text-gray-600 flex items-center gap-0.5">

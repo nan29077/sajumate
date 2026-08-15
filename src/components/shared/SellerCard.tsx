@@ -2,8 +2,6 @@ import { Icon } from '@/components/shared/Icon';
 import Link from "next/link";
 import { sellerShopUrl } from "@/lib/utils";
 import SafeImage from "@/components/shared/SafeImage";
-import {  } from 'lucide-react';
-import { FEATURE_GROUP_BUY } from "@/lib/featureFlags";
 
 interface SellerCardProps {
   seller: {
@@ -16,7 +14,6 @@ interface SellerCardProps {
     mood: string | null;
     totalFans: number;
     _count?: {
-      campaigns?: number;
       shopProducts?: number;
       fans?: number;
     };
@@ -99,12 +96,6 @@ export default function SellerCard({
               <span className="flex items-center gap-1 text-[11px] text-gray-500">
                 <Icon name="Cart" size={12} strokeWidth={1.5} className="text-gray-400" />
                 상담상품 {seller._count.shopProducts}
-              </span>
-            )}
-            {FEATURE_GROUP_BUY && seller._count?.campaigns !== undefined && seller._count.campaigns > 0 && (
-              <span className="flex items-center gap-1 text-[11px] text-gray-500">
-                <Icon name="Megaphone" size={12} strokeWidth={1.5} className="text-gray-400" />
-                공구 {seller._count.campaigns}
               </span>
             )}
           </div>

@@ -10,10 +10,7 @@ import PickSellerButton from "@/components/shared/PickSellerButton";
 import { pickSajuAvatar } from "@/lib/defaults";
 import { isSellerLive, sellerProfileImage } from "@/lib/sellerLive";
 import LiveStatusPoller from "@/components/shared/LiveStatusPoller";
-import LiveBadge, {
-  LIVE_RING_CLASS,
-  OnAirBadge,
-} from "@/components/shared/LiveBadge";
+import { LIVE_RING_CLASS, OnAirBadge } from "@/components/shared/LiveBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +31,7 @@ export default async function MySellerPage() {
             select: { id: true, shareCode: true },
           },
           _count: {
-            select: { campaigns: true, shopProducts: true, fans: true },
+            select: { shopProducts: true, fans: true },
           },
         },
       },
@@ -49,7 +46,7 @@ export default async function MySellerPage() {
                 select: { id: true, shareCode: true },
               },
               _count: {
-                select: { campaigns: true, shopProducts: true, fans: true },
+                select: { shopProducts: true, fans: true },
               },
             },
           },
@@ -132,29 +129,26 @@ export default async function MySellerPage() {
                     }
                     className="flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors"
                   >
-                    <div className="relative flex-shrink-0">
+                    <div className="relative flex-shrink-0 flex flex-col items-center gap-1">
                       <div
                         className={`w-14 h-14 rounded-full overflow-hidden bg-gray-100 ${live ? LIVE_RING_CLASS : "ring-2 ring-gray-100"}`}
                       >
                         <SafeImage
                           src={sellerProfileImage(seller)}
                           placeholder={pickSajuAvatar(seller.id)}
-                          alt={seller.shopName}
+                          alt={seller.user.name || seller.shopName}
                           width={56}
                           height={56}
-                          fallbackText={seller.shopName.charAt(0)}
+                          fallbackText={(seller.user.name || seller.shopName).charAt(0)}
                         />
                       </div>
-                      {live && (
-                        <LiveBadge className="absolute -bottom-1 left-1/2 -translate-x-1/2" />
-                      )}
+                      {live && <OnAirBadge />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <p className="text-sm font-bold text-gray-900 truncate">
-                          {seller.shopName}
+                          {seller.user.name || seller.shopName}
                         </p>
-                        {live && <OnAirBadge />}
                       </div>
                       {seller.mood && (
                         <p className="text-[11px] text-gray-400 mt-0.5">
@@ -173,7 +167,7 @@ export default async function MySellerPage() {
                     </div>
                     <PickSellerButton
                       sellerId={seller.id}
-                      sellerName={seller.shopName}
+                      sellerName={seller.user.name || seller.shopName}
                     />
                   </Link>
                   <div className="px-4 pb-3 space-y-2">

@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       ? {
           threshold: Number(seller.cartDiscountThreshold),
           rate: Number(seller.cartDiscountRate),
-          label: "장바구니 할인",
+          label: "묶음 예약 할인",
         }
       : null;
 

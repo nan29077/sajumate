@@ -43,7 +43,7 @@ export default async function ShopMyPage({
   if (!user) redirect(`/auth/login?callbackUrl=${encodeURIComponent(`/shop/${slug}/my`)}`);
 
   // 이 점집에서의 예약 내역
-  const shopReservations = await safeQuery(
+  const rawShopReservations = await safeQuery(
     "shop my page reservations",
     () =>
       prisma.reservation.findMany({
@@ -56,7 +56,10 @@ export default async function ShopMyPage({
           reservationDate: true,
           reservationTime: true,
           createdAt: true,
-          product: { select: { name: true } },
+          items: {
+            take: 1,
+            select: { productName: true },
+          },
         },
       }),
     [] as {
@@ -65,9 +68,13 @@ export default async function ShopMyPage({
       reservationDate: Date;
       reservationTime: string;
       createdAt: Date;
-      product: { name: string } | null;
+      items: { productName: string }[];
     }[],
   );
+  const shopReservations = rawShopReservations.map(({ items, ...reservation }) => ({
+    ...reservation,
+    product: items[0] ? { name: items[0].productName } : null,
+  }));
 
   // AI 상담 요약 — 이 상담사의 라이브 채팅에서 AI 봇 메시지 추출
   const participatedStreamIds = await safeQuery(

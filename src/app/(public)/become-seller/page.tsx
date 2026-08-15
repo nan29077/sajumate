@@ -1,7 +1,7 @@
 import { Icon } from '@/components/shared/Icon';
 import Link from "next/link";
 import { getFeatureFlags } from "@/lib/settings";
-import { TrendingUp, Gift, Radio, Star, ShieldCheck, Users, ArrowRight, Sparkles } from 'lucide-react';
+import { TrendingUp, Radio, Star, ShieldCheck, Users, ArrowRight, Sparkles } from 'lucide-react';
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,6 @@ const BOTTOM_BANNER = "/banners/sajumate/consultant-cta-v2.jpg";
 const BENEFITS = [
   { icon: Star, title: "준비물은 실력뿐", desc: "상담 상품과 가능한 시간만 등록하면 끝. 예약 접수·결제·알림은 사주메이트가 대신해요." },
   { icon: TrendingUp, title: "예약 수익", desc: "내 점집에서 예약이 확정될 때마다 수익이 쌓여요. 방송이 곧 매출이 돼요." },
-  { icon: Gift, title: "추천 수익", desc: "내 추천 코드로 가입·예약한 팬의 매출에서도 추천 커미션이 발생해요." },
   { icon: Radio, title: "라이브 상담", desc: "실시간 라이브 방송으로 팬과 소통하며 그 자리에서 예약을 받을 수 있어요." },
   { icon: Users, title: "단골 팬 관리", desc: "단골로 등록한 팬이, 라이브·새 소식 알림으로 다시 찾아와요." },
   { icon: ShieldCheck, title: "안심 정산", desc: "투명한 정산 체계로 수익을 정해진 주기에 안전하게 지급받아요." },
@@ -43,31 +42,30 @@ export default async function BecomeSellerPage() {
   const { beeDecoration: SHOW_BEES } = await getFeatureFlags();
   return (
     <div className="bg-white min-h-screen pb-40">
-      {/* ───── 히어로 (검정 + 별밭) ───── */}
-      <section className="relative overflow-hidden bg-gray-900">
+      {/* ───── 히어로 (사주메이트 밤하늘 + 별밭) ───── */}
+      <section className="relative overflow-hidden bg-brand-950">
         <div className="absolute inset-0" style={{ backgroundImage: STARFIELD }} />
         <div className="absolute -top-16 -right-12 w-56 h-56 rounded-full bg-brand-500/25 blur-3xl" />
         <div className="relative px-6 pt-12 pb-11 text-white">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 text-black px-3 py-1 mb-4">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 text-moon-100 ring-1 ring-inset ring-white/10 px-3 py-1 mb-4">
             <Icon name="Store" size={12} strokeWidth={2.5} />
             <span className="text-[10px] font-extrabold tracking-wide">CONSULTANT PROGRAM</span>
           </div>
           <div className="flex items-start gap-3">
             <h1 className="text-[28px] font-extrabold leading-tight">
               내 팬과 함께,
-              <br />나만의 <span className="text-brand-500">점집</span>을 열다
+              <br />나만의 <span className="text-moon-500">점집</span>을 열다
             </h1>
             {SHOW_BEES && <Sparkles size={48} strokeWidth={1.3}
-              className="w-12 h-12 text-brand-500 mt-1 pointer-events-none select-none flex-shrink-0 opacity-80" aria-hidden="true" />}
+              className="w-12 h-12 text-moon-500 mt-1 pointer-events-none select-none flex-shrink-0 opacity-80" aria-hidden="true" />}
           </div>
           <p className="mt-3.5 text-[13px] text-gray-300 leading-relaxed">
             상담 상품과 가능한 시간만 등록하면,
             <br />라이브와 단골 관리로 나만의 점집이 열려요.
           </p>
           <div className="mt-5 flex flex-wrap gap-2 text-[11px] font-semibold">
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 text-white px-3 py-1.5"><Icon name="Wallet" size={12} className="text-brand-500" /> 예약 수익</span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 text-white px-3 py-1.5"><Icon name="Gift" size={12} className="text-brand-500" /> 추천 수익</span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 text-white px-3 py-1.5"><Icon name="Live" size={12} className="text-brand-500" /> 라이브 예약</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 text-white px-3 py-1.5"><Icon name="Wallet" size={12} className="text-moon-500" /> 예약 수익</span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 text-white px-3 py-1.5"><Icon name="Live" size={12} className="text-red-400" /> 라이브 예약</span>
           </div>
         </div>
       </section>
@@ -104,7 +102,7 @@ export default async function BecomeSellerPage() {
         <div className="mt-4 space-y-2">
           {STEPS.map((s, i) => (
             <div key={s.title} className="flex items-start gap-3 rounded-2xl border border-gray-100 px-4 py-3.5">
-              <div className="w-7 h-7 rounded-full bg-brand-500 text-black text-[12px] font-extrabold flex items-center justify-center flex-shrink-0">
+              <div className="w-7 h-7 rounded-full bg-brand-600 text-white text-[12px] font-extrabold flex items-center justify-center flex-shrink-0">
                 {i + 1}
               </div>
               <div className="flex-1 min-w-0 pt-0.5">
@@ -125,7 +123,7 @@ export default async function BecomeSellerPage() {
               <Icon name="Store" size={16} className="text-brand-500" /> 지금 상담사가 되면
             </h3>
             <ul className="mt-3.5 space-y-2.5">
-              {["가입·입점 비용 0원", "상담 상품·시간 자유 등록", "라이브·단체 상담 예약 채널 제공", "투명한 수익 정산"].map((t) => (
+              {["가입·입점 비용 0원", "상담 상품·시간 자유 등록", "라이브·영상 상담 예약 채널 제공", "투명한 수익 정산"].map((t) => (
                 <li key={t} className="flex items-center gap-2.5 text-[13px] text-gray-100">
                   <span className="w-5 h-5 rounded-full bg-brand-500 flex items-center justify-center flex-shrink-0">
                     <Icon name="Check" size={13} strokeWidth={3} className="text-black" />

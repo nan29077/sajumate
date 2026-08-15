@@ -110,28 +110,28 @@ export default function ProductBuySection({
           notReady ? (
             <>
               <button type="button" onClick={notifySelectOption} className={cartClass}>
-                장바구니
+                예약함
               </button>
               <button type="button" onClick={notifySelectOption} className={buyClass}>
-                {campaign ? "단체 상담" : "구매하기"}
+                예약하기
               </button>
             </>
           ) : status === "loading" ? (
             <>
               <button type="button" disabled className={`${cartClass} opacity-50 cursor-not-allowed`}>
-                장바구니
+                예약함
               </button>
               <button type="button" disabled className={`${buyClass} opacity-50 cursor-not-allowed`}>
-                {campaign ? "단체 상담" : "구매하기"}
+                예약하기
               </button>
             </>
           ) : status === "unauthenticated" ? (
             <>
               <button type="button" onClick={() => setGuestModalOpen(true)} className={cartClass}>
-                장바구니
+                예약함
               </button>
               <button type="button" onClick={() => setGuestModalOpen(true)} className={buyClass}>
-                {campaign ? "단체 상담" : "구매하기"}
+                예약하기
               </button>
             </>
           ) : (
@@ -142,7 +142,7 @@ export default function ProductBuySection({
                 sellerId={sellerId}
                 campaignId={campaignId}
                 className={cartClass}
-                label="장바구니"
+                label="예약함"
                 hideIcon
               />
               <BuyNowButton
@@ -151,7 +151,7 @@ export default function ProductBuySection({
                 sellerId={sellerId}
                 campaignId={campaignId}
                 fromLive={fromLive}
-                label={campaign ? "단체 상담" : "구매하기"}
+                label="예약하기"
                 price={campaign ? formatPrice(campaign.campaignPrice) : undefined}
                 className={buyClass}
                 hideIcon

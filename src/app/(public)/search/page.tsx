@@ -99,7 +99,7 @@ export default async function SearchPage({
                 type="text"
                 name="q"
                 defaultValue={q}
-                placeholder="상담상품명, 브랜드, 카테고리 검색..."
+                placeholder="상담상품명, 상담 분야 검색..."
                 className="w-full text-sm pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400"
               />
               {style && <input type="hidden" name="style" value={style} />}

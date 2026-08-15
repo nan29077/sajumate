@@ -91,14 +91,14 @@ function parseBool(value: string | undefined, fallback: boolean): boolean {
 export async function getFeatureFlags(): Promise<FeatureFlags> {
   const map = await getSettingsMap();
   return {
-    groupBuy: parseBool(map[FEATURE_SETTING_KEYS.groupBuy], FEATURE_DEFAULTS.groupBuy),
+    groupBuy: false,
     liveCommerce: parseBool(map[FEATURE_SETTING_KEYS.liveCommerce], FEATURE_DEFAULTS.liveCommerce),
     seller: parseBool(map[FEATURE_SETTING_KEYS.seller], FEATURE_DEFAULTS.seller),
     brix: parseBool(map[FEATURE_SETTING_KEYS.brix], FEATURE_DEFAULTS.brix),
     regNormal: parseBool(map[FEATURE_SETTING_KEYS.regNormal], FEATURE_DEFAULTS.regNormal),
-    regGroupBuy: parseBool(map[FEATURE_SETTING_KEYS.regGroupBuy], FEATURE_DEFAULTS.regGroupBuy),
-    productRequest: parseBool(map[FEATURE_SETTING_KEYS.productRequest], FEATURE_DEFAULTS.productRequest),
-    referral: parseBool(map[FEATURE_SETTING_KEYS.referral], FEATURE_DEFAULTS.referral),
+    regGroupBuy: false,
+    productRequest: false,
+    referral: false,
     beeDecoration: parseBool(map[FEATURE_SETTING_KEYS.beeDecoration], FEATURE_DEFAULTS.beeDecoration),
     game: parseBool(map[FEATURE_SETTING_KEYS.game], FEATURE_DEFAULTS.game),
     themSnow: parseBool(map[FEATURE_SETTING_KEYS.themSnow], FEATURE_DEFAULTS.themSnow),

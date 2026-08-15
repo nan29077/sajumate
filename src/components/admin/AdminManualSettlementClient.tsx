@@ -23,8 +23,6 @@ type Settlement = {
 
 type Props = {
   nodeUsers: UserOption[];
-  middleAdminUsers: UserOption[];
-  brandAdminUsers: UserOption[];
   settlements: Settlement[];
 };
 
@@ -48,8 +46,6 @@ function fmtDate(iso: string) {
 
 export default function AdminManualSettlementClient({
   nodeUsers,
-  middleAdminUsers,
-  brandAdminUsers,
   settlements: initialSettlements,
 }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>("CONSULTANT");
@@ -143,7 +139,7 @@ export default function AdminManualSettlementClient({
         </div>
         <div>
           <h1 className="text-xl font-bold text-gray-900">수기 정산</h1>
-          <p className="text-sm text-gray-500">노드 · 중간관리자 · 브랜드에게 직접 정산금을 지급합니다.</p>
+          <p className="text-sm text-gray-500">상담사에게 정산 조정금을 직접 지급합니다.</p>
         </div>
       </div>
 

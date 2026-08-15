@@ -105,7 +105,7 @@ export default function SellerSearchHero() {
         </h1>
         <p className="mt-2 text-[13px] text-gray-500 leading-relaxed">
           상담사를 단골로 설정하면 단골가게가 되고,
-          <br />상담사별 전용 점집에서 상담상품·단체 상담·라이브를 만나요.
+          <br />상담사별 전용 공간에서 상담상품·예약·라이브를 만나요.
         </p>
 
         {/* 상담사 검색 */}
@@ -168,7 +168,7 @@ export default function SellerSearchHero() {
                               fallbackText={s.shopName.charAt(0)}
                             />
                           </div>
-                          {s.isLive && <LiveBadge className="absolute -bottom-1 left-1/2 -translate-x-1/2" />}
+                          {s.isLive && <LiveBadge className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900 truncate">{s.shopName}</p>

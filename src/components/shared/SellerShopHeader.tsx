@@ -28,7 +28,7 @@ export default function SellerShopHeader({
   const { data: session } = useSession();
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
+    <header className="sticky top-0 z-50 border-b border-brand-100/70 bg-white/90 backdrop-blur-xl">
       <div className="flex items-center justify-between h-14 px-4">
         {/* 좌측: 상담사 로고 + 이름 — 항상 점집 홈으로 이동 (라이브 여부 무관) */}
         <div className="flex items-center gap-2.5 min-w-0">
@@ -37,7 +37,7 @@ export default function SellerShopHeader({
             scroll={true}
             className="flex items-center gap-2.5 min-w-0"
           >
-            <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-50 flex-shrink-0 ring-1 ring-gray-200">
+            <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-xl bg-brand-50 ring-1 ring-brand-100">
               <SafeImage
                 src={sellerLogo}
                 placeholder={pickSajuAvatar(sellerId || sellerSlug)}
@@ -47,7 +47,7 @@ export default function SellerShopHeader({
                 fallbackText={sellerName.charAt(0)}
               />
             </div>
-            <span className="text-[15px] font-bold text-gray-900 truncate">{sellerName}</span>
+            <span className="truncate text-[15px] font-extrabold tracking-[-0.02em] text-brand-950">{sellerName}</span>
           </Link>
         </div>
 
@@ -62,13 +62,13 @@ export default function SellerShopHeader({
             {/* 점집 독립 로그인/가입 — 사주메이트 메인과 분리된 점집 전용 화면 */}
             <Link
               href={`/shop/${sellerSlug}/login`}
-              className="px-3 py-1.5 text-[13px] font-medium text-gray-600 border border-gray-200 rounded-full hover:bg-gray-50 transition-colors"
+              className="rounded-full border border-brand-100 px-3 py-1.5 text-[13px] font-medium text-brand-700 transition-colors hover:bg-brand-50"
             >
               로그인
             </Link>
             <Link
               href={`/shop/${sellerSlug}/join`}
-              className="px-3 py-1.5 text-[13px] font-semibold text-white bg-gray-900 rounded-full hover:bg-gray-700 transition-colors"
+              className="rounded-full bg-brand-700 px-3 py-1.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-800"
             >
               회원가입
             </Link>

@@ -141,17 +141,38 @@ export default function ShopLoginClient({ shop }: { shop: Shop }) {
           <div className="space-y-1.5">
             <button
               type="button"
-              onClick={() => {
-                setEmail("test@test.com");
-                setPassword("Test1234!");
+              disabled={loading}
+              onClick={async () => {
+                setLoading(true);
+                setError("");
+                try {
+                  const ensureRes = await fetch("/api/dev/ensure-test-user", { method: "POST" });
+                  if (!ensureRes.ok) {
+                    const body = await ensureRes.json().catch(() => ({}));
+                    setError("테스트 계정 준비 실패 (" + ensureRes.status + "): " + (body?.error || "알 수 없는 오류"));
+                    return;
+                  }
+                  const result = await signIn("credentials", {
+                    email: "customer1@example.com",
+                    password: "password123",
+                    redirect: false,
+                  });
+                  if (result?.error) {
+                    setError("테스트 로그인 실패: " + result.error);
+                    return;
+                  }
+                  router.push(`/shop/${shop.slug}`);
+                  router.refresh();
+                } catch {
+                  setError("테스트 로그인 중 오류가 발생했습니다.");
+                } finally {
+                  setLoading(false);
+                }
               }}
-              className="w-full py-2 text-sm text-violet-600 border border-violet-200 rounded-lg hover:bg-violet-50 transition"
+              className="w-full py-2 text-sm text-violet-600 border border-violet-200 rounded-lg hover:bg-violet-50 disabled:opacity-50 transition"
             >
-              테스트 계정 자동입력
+              {loading ? "로그인 중..." : "테스트 계정으로 로그인"}
             </button>
-            <p className="text-center text-[10px] text-gray-400">
-              ※ 테스트 계정은 관리자가 직접 생성한 계정만 사용 가능합니다
-            </p>
           </div>
         )}
         <p className="text-center text-xs text-gray-400">

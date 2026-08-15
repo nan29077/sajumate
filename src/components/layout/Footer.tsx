@@ -23,9 +23,8 @@ export default function Footer({
   const { subpageActive } = useShopChrome();
   if (/^\/shop\/[^\/]+/.test(pathname) || subpageActive) return null;
 
-  const FEATURE_GROUP_BUY = flags.groupBuy;
-
   const footer = footerSettings ?? FOOTER_DEFAULTS;
+  const copyright = footer.copyright.replace(/sellerbricks/gi, "사주메이트");
 
   // 활성화된 소셜 링크만 렌더
   const activeSocials: { href: string; icon: typeof Instagram; label: string }[] = [];
@@ -70,9 +69,6 @@ export default function Footer({
           <div>
             <h4 className="text-xs font-semibold text-white mb-3">서비스</h4>
             <ul className="space-y-2">
-              {FEATURE_GROUP_BUY && (
-                <li><Link href="/campaigns" className="text-xs hover:text-white transition-colors">단체 상담</Link></li>
-              )}
               <li><Link href="/auth/register?role=seller" className="text-xs hover:text-white transition-colors">상담사 신청하기</Link></li>
               <li><Link href="/support/seller-guide" className="text-xs hover:text-white transition-colors">상담사 신청 안내</Link></li>
               <li><Link href="/support/terms" className="text-xs hover:text-white transition-colors">이용약관</Link></li>
@@ -117,7 +113,7 @@ export default function Footer({
                 <Link href="/support/privacy" className="hover:text-gray-300">개인정보처리방침</Link>
                 <a href="#" className="hover:text-gray-300">사업자정보확인</a>
               </div>
-              <p>&copy; {footer.copyright}</p>
+              <p>&copy; {copyright}</p>
             </div>
           </div>
         </div>

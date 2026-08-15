@@ -28,7 +28,7 @@ export function OnAirBadge({ className = "" }: { className?: string }) {
 export default function LiveBadge({
   className = "",
   size = "xs",
-  label = "상담 중",
+  label = "라이브 중",
 }: {
   className?: string;
   size?: "xs" | "sm";

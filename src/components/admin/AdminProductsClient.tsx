@@ -2,7 +2,7 @@
 
 import { Icon } from '@/components/shared/Icon';
 import { useState, useMemo, useCallback } from "react";
-import { X, Loader2, Building2, Crown, Shield, Star } from 'lucide-react';
+import { X, Loader2, Building2, Shield, Star } from 'lucide-react';
 import { formatPrice } from "@/lib/utils";
 import ProductImage from "@/components/shared/ProductImage";
 import AdminProductActions from "@/components/shared/AdminProductActions";
@@ -15,7 +15,7 @@ import { useAppDialog } from "@/components/shared/AppDialog";
 import SafeImage from "@/components/shared/SafeImage";
 import { pickSajuAvatar } from "@/lib/defaults";
 
-type RegistrarType = "CONSULTANT" | "BRAND" | "ADMIN";
+type RegistrarType = "CONSULTANT" | "ADMIN";
 
 interface Product {
   id: string; name: string; basePrice: number;
@@ -25,11 +25,10 @@ interface Product {
   brandId?: string | null; middleAdminId?: string | null;
   registrarSellerId?: string | null; shopSellerIds?: string[];
   categoryName: string | null; sellerNames: string[]; sellerCount: number;
-  reviewCount: number; campaignCount: number; chatCount?: number;
+  reviewCount: number; chatCount?: number;
   registeredBy?: string; registrarType?: RegistrarType;
   soldCount?: number; wishlistCount?: number; createdAt?: string;
   sellerLogos?: { id: string; shopName: string; shopLogo: string | null }[];
-  activeCampaigns?: { id: string; sellerName: string }[];
   activeSellers?: { id: string; shopName: string; shopLogo: string | null }[];
   isSelling?: boolean;
 }
@@ -56,7 +55,7 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
   const [bulkLoading, setBulkLoading] = useState(false);
   const { appConfirm, appAlert } = useAppDialog();
 
-  // 승인 대기(미승인) 상담상품 — 브랜드/관리자 등록 후 최고관리자 승인 대기
+  // 승인 대기(미승인) 상담상품
   const unapproved = useMemo(() => products.filter((p) => !p.isApproved), [products]);
   const toggleSelect = (id: string) =>
     setSelectedIds((prev) => {
@@ -92,7 +91,6 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
       if (!q) return true;
       return (
         p.name.toLowerCase().includes(q) ||
-        (p.brandName && p.brandName.toLowerCase().includes(q)) ||
         (p.categoryName && p.categoryName.toLowerCase().includes(q)) ||
         p.sellerNames.some(s => s.toLowerCase().includes(q))
       );
@@ -100,7 +98,6 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
     if (typeTab === "SELLING" && q) {
       return list.filter(p =>
         p.name.toLowerCase().includes(q) ||
-        (p.brandName && p.brandName.toLowerCase().includes(q)) ||
         (p.activeSellers || []).some(s => s.shopName.toLowerCase().includes(q))
       );
     }
@@ -134,7 +131,7 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
 
   // 등록자 유형별 카운트 (탭 배지)
   const typeCounts = useMemo(() => {
-    const c = { ALL: products.length, BRAND: 0, CONSULTANT: 0, ADMIN: 0, SELLING: 0 } as Record<string, number>;
+    const c = { ALL: products.length, CONSULTANT: 0, ADMIN: 0, SELLING: 0 } as Record<string, number>;
     for (const p of products) {
       c[p.registrarType || "ADMIN"]++;
       if (p.isSelling) c["SELLING"]++;
@@ -185,11 +182,14 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
   }, []);
 
   return (
-    <>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold text-gray-900">상담상품 관리</h1>
-          <p className="text-xs sm:text-sm text-gray-500">총 {products.length}개 상담상품</p>
+    <div className="dashboard-page">
+      <div className="dashboard-page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="dashboard-icon-tile"><Icon name="ConsultProduct" size={19} /></span>
+          <div>
+          <h1 className="text-lg sm:text-xl font-bold text-brand-950">상담상품 관리</h1>
+          <p className="text-xs sm:text-sm text-gray-500">상담 서비스와 승인 상태를 관리합니다 · 총 {products.length}개</p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <ProductRegisterForm brands={brands} mode="admin" hideGroupBuy />
@@ -198,15 +198,15 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
 
       {/* 상담상품 승인 대기 */}
       {unapproved.length > 0 && (
-        <div className="bg-white rounded-xl border border-amber-200 overflow-hidden mb-5">
+        <div className="dashboard-panel border-moon-500/30">
           <div className="flex items-center gap-2 border-b border-amber-100 bg-amber-50 px-4 py-3">
             <Icon name="Warning" size={14} className="text-amber-500" />
             <p className="text-sm font-bold text-amber-700">상담상품 승인 대기</p>
-            <span className="text-[11px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">{unapproved.length}</span>
+            <span className="text-[11px] bg-moon-100 text-moon-700 px-1.5 py-0.5 rounded-full">{unapproved.length}</span>
           </div>
           <>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 sm:px-4 py-2.5">
-                <p className="text-[11px] text-gray-400">브랜드/관리자가 등록한 상담상품. 승인 시 상담사에게 노출됩니다.</p>
+                <p className="text-[11px] text-gray-400">관리자가 등록한 상담상품입니다. 승인 후 상담사에게 노출됩니다.</p>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={toggleSelectAll}
@@ -241,7 +241,7 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] font-medium text-gray-900 truncate">{p.name}</p>
-                          <p className="text-[11px] text-gray-400 truncate">{p.brandName || "브랜드 미지정"} · {formatPrice(p.basePrice)}</p>
+                          <p className="text-[11px] text-gray-400 truncate">관리자 등록 · {formatPrice(p.basePrice)}</p>
                         </div>
                         <div className="flex items-center justify-end gap-1.5 w-full sm:w-auto flex-shrink-0" onClick={(e) => e.preventDefault()}>
                           <button
@@ -273,8 +273,8 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
         <div className="relative flex-1">
           <Icon name="Search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input type="text" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-            placeholder="상담상품명, 브랜드, 카테고리, 상담사 검색..."
-            className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white" />
+            placeholder="상담상품명, 분야, 상담사 검색..."
+            className="input-field pl-9 pr-8 py-2 text-sm" />
           {searchQuery && (
             <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X size={14} /></button>
           )}
@@ -288,7 +288,7 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
             <Icon name="Warning" size={16} strokeWidth={1.5} className="text-yellow-500" />
             <h2 className="text-sm font-bold text-gray-700">상담사 상담상품 신청 대기 ({pendingShopProducts.length})</h2>
           </div>
-          <div className="bg-yellow-50 rounded-xl border border-yellow-100 overflow-hidden divide-y divide-yellow-100">
+          <div className="bg-moon-50 rounded-2xl border border-moon-500/25 overflow-hidden divide-y divide-moon-100">
             {pendingShopProducts.map((sp) => (
               <div key={sp.id} className="flex flex-wrap sm:flex-nowrap items-center gap-3 p-3 sm:p-4">
                 <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
@@ -298,7 +298,6 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
                   <p className="text-sm font-medium text-gray-900 truncate">{sp.productName}</p>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">상담사: {sp.sellerName}</span>
-                    {sp.brandName && <span className="text-[10px] text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">{sp.brandName}</span>}
                     {sp.sellerPrice != null && <span className="text-[10px] text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded font-medium">판매가 {sp.sellerPrice.toLocaleString("ko-KR")}원</span>}
                     {sp.createdAt && <span className="text-[10px] text-gray-400">{new Date(sp.createdAt).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}</span>}
                   </div>
@@ -332,7 +331,6 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
           {([
             { v: "ALL", l: "전체" },
             { v: "SELLING", l: "판매중" },
-            { v: "BRAND", l: "브랜드" },
             { v: "CONSULTANT", l: "상담사" },
             { v: "ADMIN", l: "관리자" },
           ] as const).map((t) => (
@@ -368,11 +366,11 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
       </div>
 
       {/* Products list */}
-      <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+      <div className="dashboard-panel">
         <div className="divide-y divide-gray-50">
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
-              <Icon name="Package" size={36} className="mx-auto mb-2 opacity-30" />
+              <Icon name="ConsultProduct" size={36} className="mx-auto mb-2 text-brand-200" />
               <p className="text-sm">{searchQuery ? "검색 결과가 없습니다." : "등록된 상담상품이 없습니다."}</p>
             </div>
           ) : paged.map((product) => {
@@ -390,7 +388,7 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
                     {/* 등록자 구분 배지 */}
                     {typeTab !== "SELLING" && (
                       <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-0.5 ${rt.cls}`}>
-                        <rt.icon size={9} /> {product.registrarType === "BRAND" && product.brandName ? product.brandName : product.registrarType === "CONSULTANT" && product.sellerNames.length > 0 ? product.sellerNames[0] : rt.label}
+                        <rt.icon size={9} /> {product.registrarType === "CONSULTANT" && product.sellerNames.length > 0 ? product.sellerNames[0] : rt.label}
                       </span>
                     )}
                     {product.categoryName && <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{product.categoryName}</span>}
@@ -403,9 +401,6 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
                       <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-medium">
                         판매 상담사 {product.sellerCount}
                       </span>
-                    )}
-                    {product.campaignCount > 0 && (
-                      <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-medium">공구 {product.campaignCount}</span>
                     )}
                     {(product.soldCount || 0) > 0 && (
                       <span className="text-[10px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded font-medium">판매 {product.soldCount}</span>
@@ -535,13 +530,12 @@ export default function AdminProductsClient({ products, pendingShopProducts, sol
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
 // 등록자 유형 배지 스타일
 const REGISTRAR_BADGE: Record<RegistrarType, { label: string; cls: string; icon: any }> = {
-  BRAND: { label: "브랜드", cls: "text-purple-600 bg-purple-50", icon: Crown },
   CONSULTANT: { label: "상담사", cls: "text-blue-600 bg-blue-50", icon: Building2 },
   ADMIN: { label: "관리자", cls: "text-gray-600 bg-gray-100", icon: Shield },
 };
