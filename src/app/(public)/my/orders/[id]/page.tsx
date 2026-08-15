@@ -135,7 +135,7 @@ export default async function OrderDetailPage({
     order.discountType === "referral"
       ? "기존 할인"
       : order.discountType === "pick_channel"
-        ? "채널인증 할인"
+        ? "단골 할인"
         : order.discountType?.startsWith("cart")
           ? "묶음 예약 할인"
           : "할인";

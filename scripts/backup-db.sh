@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 셀러브릭스 운영 DB 백업 스크립트 (mysqldump 논리 백업).
+# 사주메이트 운영 DB 백업 스크립트 (mysqldump 논리 백업).
 #
 # - app/.env 의 DATABASE_URL 을 파싱해서 mysqldump 실행
 # - 결과를 gzip 압축하여 REPO_DIR/backups/ 에 타임스탬프 파일로 저장

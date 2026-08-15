@@ -4,7 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import SellerShopBottomNav from "@/components/shared/SellerShopBottomNav";
 import { auth } from "@/lib/auth";
-import { pickBuyerAvatar } from "@/lib/defaults";
+import { pickBuyerAvatar, resolveShopBanner } from "@/lib/defaults";
 import { safeQuery } from "@/lib/safeDb";
 import ConsultDetailSheet from "@/components/shop/ConsultDetailSheet";
 
@@ -20,9 +20,12 @@ export default async function ShopMyPage({
   // 상담사 존재 확인
   const seller = await prisma.sellerProfile.findUnique({
     where: { slug },
-    select: { id: true, slug: true, shopName: true, isApproved: true, user: { select: { name: true } } },
+    select: { id: true, slug: true, shopName: true, shopBanner: true, isApproved: true, user: { select: { name: true } } },
   });
   if (!seller || !seller.isApproved) notFound();
+
+  // 점집 홈 상단 배너와 동일한 이미지를 마이페이지 헤더 배경으로 사용(통일)
+  const banner = resolveShopBanner(seller.shopBanner, seller.id);
 
   // 인증 확인 (비로그인 → 점집 로그인 페이지로)
   const session = await auth();
@@ -129,9 +132,15 @@ export default async function ShopMyPage({
 
   return (
     <div className="animate-fade-in pb-32">
-      {/* 헤더 */}
-      <div className="bg-violet-600 px-4 pt-6 pb-10">
-        <div className="flex items-center gap-3">
+      {/* 헤더 — 점집 홈 상단 배너 이미지와 통일 */}
+      <div className="relative overflow-hidden bg-brand-950 px-4 pt-6 pb-10">
+        <img
+          src={banner}
+          alt={`${seller.shopName} 배너`}
+          className="absolute inset-0 h-full w-full scale-[1.01] object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-brand-950/45 via-brand-950/35 to-brand-950/70" />
+        <div className="relative flex items-center gap-3">
           <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
             <img
               src={user.avatar || pickBuyerAvatar(user.id, (user as any).gender)}

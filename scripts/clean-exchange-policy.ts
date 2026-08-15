@@ -1,7 +1,7 @@
 /**
  * 상품 description 에 섞여 있는 "교환·환불 규정" 텍스트 소급 삭제 (관리자용 데이터 정리)
  *
- * 셀러브릭스 Product 모델에는 별도 exchangePolicy/returnPolicy 필드가 없고,
+ * 사주메이트 Product 모델에는 별도 exchangePolicy/returnPolicy 필드가 없고,
  * 교환·환불 규정은 상품 `description` 필드 안에 텍스트로 섞여 저장돼 있다.
  * (표준 카드가 상세페이지에 항상 하드코딩으로 노출되므로 description 내 규정 텍스트는 불필요)
  *
