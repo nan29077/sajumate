@@ -21,6 +21,7 @@ export async function GET(request: Request) {
       user: { NOT: { role: { in: ["SELLER", "BUYER", "NODE", "MIDDLE_ADMIN", "BRAND_ADMIN"] as any[] } } },
       OR: [
         { shopName: { contains: q } },
+        { user: { name: { contains: q } } }, // 상담사 실명 검색
         { slug: { contains: q } },
         { referralCode: { contains: q } }, // 상담사 코드 검색
         { mood: { contains: q } },

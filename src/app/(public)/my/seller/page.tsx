@@ -92,8 +92,11 @@ export default async function MySellerPage() {
       </div>
 
       <div className="px-4 pt-4">
+        {/* 단골 유무와 관계없이 항상 상단에 검색 바 표시 */}
+        <ConsultantSearchWidget />
+
         {uniqueSellers.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">
+          <div className="text-center py-16 text-gray-400">
             <Users
               size={48}
               strokeWidth={1.2}
@@ -105,13 +108,9 @@ export default async function MySellerPage() {
             <p className="text-xs text-gray-400 mt-1">
               마음에 드는 상담사를 단골로 등록하고 소식을 받아보세요!
             </p>
-            <p className="text-[11px] text-gray-400 mt-3">
-              이름 또는 코드로 상담사를 검색해 단골로 등록할 수 있어요
-            </p>
-            <ConsultantSearchWidget />
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 mt-4">
             {uniqueSellers.map((seller) => {
               const live = isSellerLive(seller);
               return (
