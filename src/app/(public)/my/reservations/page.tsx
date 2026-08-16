@@ -165,12 +165,6 @@ export default async function MyReservationsPage({
           <div className="text-center py-20">
             <CalendarX2 size={48} strokeWidth={1.2} className="text-gray-200 mx-auto mb-3" />
             <p className="text-gray-400 text-sm">상담 예약이 없습니다.</p>
-            <Link
-              href="/sellers"
-              className="mt-4 inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-800"
-            >
-              상담사 찾기
-            </Link>
           </div>
         ) : (
           reservations.map((r) => {
