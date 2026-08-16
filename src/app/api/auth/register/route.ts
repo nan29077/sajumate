@@ -54,8 +54,22 @@ export async function POST(request: NextRequest) {
     const address1Value = address1Trimmed || null;
     const address2Value = typeof address2 === "string" && address2.trim() ? address2.trim() : null;
 
+    // 상담사 slug — 이메일 앞부분 기반, 이미 사용 중이면 숫자 접미사(-1, -2, ...)로 충돌 회피
+    const baseSlug = emailTrimmed.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "-");
+    let sellerSlug = baseSlug;
+    if (userRole === "CONSULTANT") {
+      for (let i = 1; i <= 50; i++) {
+        const slugExists = await prisma.sellerProfile.findUnique({
+          where: { slug: sellerSlug },
+          select: { id: true },
+        });
+        if (!slugExists) break;
+        sellerSlug = `${baseSlug}-${i}`;
+      }
+    }
+
     // 1) User 생성
-    const user = await (prisma as any).user.create({
+    const createUser = (slugValue: string) => (prisma as any).user.create({
       data: {
         name: nameTrimmed,
         email: emailTrimmed,
@@ -76,7 +90,7 @@ export async function POST(request: NextRequest) {
         ...(userRole === "CONSULTANT" && {
           sellerProfile: {
             create: {
-              slug: emailTrimmed.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "-"),
+              slug: slugValue,
               shopName: `${nameTrimmed}의 점집`,
               isApproved: false,
             },
@@ -84,6 +98,18 @@ export async function POST(request: NextRequest) {
         }),
       },
     });
+
+    let user;
+    try {
+      user = await createUser(sellerSlug);
+    } catch (e: any) {
+      // slug unique 충돌 (동시 가입 레이스) — 타임스탬프 접미사로 1회 재시도
+      if (userRole === "CONSULTANT" && e?.code === "P2002" && String(e?.meta?.target ?? "").includes("slug")) {
+        user = await createUser(`${baseSlug}-${Date.now().toString(36)}`);
+      } else {
+        throw e;
+      }
+    }
 
     // 2) CUSTOMER 일 때만 고객 추천인 매핑
     if (userRole === "CUSTOMER") {
