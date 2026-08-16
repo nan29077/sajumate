@@ -17,11 +17,12 @@ export async function GET(request: Request) {
   const sellers = await prisma.sellerProfile.findMany({
     where: {
       isApproved: true,
-      // CONSULTANT 역할만 검색 — 셀러브릭스 SELLER 잔재 계정 제외
-      user: { role: "CONSULTANT" },
+      // 셀러브릭스 레거시 역할(SELLER/BUYER/NODE 등)만 제외 — CONSULTANT, SUPER_ADMIN, CUSTOMER 등 포함
+      user: { NOT: { role: { in: ["SELLER", "BUYER", "NODE", "MIDDLE_ADMIN", "BRAND_ADMIN"] as any[] } } },
       OR: [
         { shopName: { contains: q } },
         { slug: { contains: q } },
+        { referralCode: { contains: q } }, // 상담사 코드 검색
         { mood: { contains: q } },
         { category: { contains: q } },
       ],
