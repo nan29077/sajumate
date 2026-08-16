@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     if (!nameTrimmed) return NextResponse.json({ error: "이름을 입력해주세요." }, { status: 400 });
     if (!emailTrimmed) return NextResponse.json({ error: "이메일을 입력해주세요." }, { status: 400 });
     if (typeof password !== "string" || !password) return NextResponse.json({ error: "비밀번호를 입력해주세요." }, { status: 400 });
+    if (password.length < 8) return NextResponse.json({ error: "비밀번호는 8자 이상이어야 합니다" }, { status: 400 });
     if (fieldSettings.phone === "required" && !phoneDigits) return NextResponse.json({ error: "휴대전화번호를 입력해주세요." }, { status: 400 });
     if (fieldSettings.gender === "required" && gender !== "male" && gender !== "female") return NextResponse.json({ error: "성별을 선택해주세요." }, { status: 400 });
     if (fieldSettings.birthday === "required" && (typeof birthday !== "string" || !birthday.trim())) return NextResponse.json({ error: "생년월일을 입력해주세요." }, { status: 400 });
