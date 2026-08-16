@@ -40,7 +40,8 @@ export async function GET(req: NextRequest) {
     const live = await prisma.liveStream.findUnique({
       where: { id: liveId },
       include: {
-        chatMessages: { orderBy: { createdAt: "desc" }, take: 100 },
+        // 스팸 필터로 숨김 처리된 메시지는 무인증 상세 조회에서 제외
+        chatMessages: { where: { isHidden: false }, orderBy: { createdAt: "desc" }, take: 100 },
         products: {
           include: { product: { select: { id: true, name: true, thumbnail: true, basePrice: true, comparePrice: true, badges: true } } },
           orderBy: { sortOrder: "asc" },
