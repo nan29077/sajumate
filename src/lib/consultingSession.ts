@@ -12,12 +12,14 @@ import { createNotification } from "@/lib/notifications";
 import type { ConsultingSession } from "@/generated/prisma";
 
 /** 영상 상담으로 취급하는 consultingMethod 값 */
-const VIDEO_METHODS = new Set(["영상통화", "영상", "화상"]);
+const VIDEO_METHODS = new Set(["영상통화", "영상", "화상", "영상 상담"]);
 
 export const CONSULTING_METHOD_FALLBACK = "영상통화";
 
 export function isVideoMethod(method: string | null | undefined): boolean {
-  return !!method && VIDEO_METHODS.has(method);
+  if (!method) return false;
+  // Set 에 없더라도 "영상"으로 시작하는 모든 값을 영상 상담으로 인식
+  return VIDEO_METHODS.has(method) || method.startsWith("영상");
 }
 
 /**

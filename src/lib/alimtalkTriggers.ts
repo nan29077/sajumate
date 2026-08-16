@@ -77,6 +77,44 @@ export async function notifyReservationConfirmedToCustomer(
   });
 }
 
+/** 결제취소 승인 완료 시 고객에게 취소 안내 알림톡 발송. */
+export async function notifyReservationCancelledToCustomer(
+  reservationId: string,
+): Promise<TemplatedSendResult> {
+  const reservation = await prisma.reservation.findUnique({
+    where: { id: reservationId },
+    select: {
+      reservationNumber: true,
+      customerName: true,
+      customerPhone: true,
+      reservationDate: true,
+      user: { select: { name: true, phone: true } },
+      seller: { select: { id: true, shopName: true } },
+    },
+  });
+  if (!reservation) return { notified: false, reason: "예약 없음" };
+
+  const phone = normalizePhone(reservation.customerPhone || reservation.user.phone);
+  if (!phone) return { notified: false, reason: "고객 전화번호 없음" };
+
+  const kstDate = new Date(reservation.reservationDate.getTime() + 9 * 3600 * 1000);
+  const dateStr = `${kstDate.getUTCFullYear()}-${String(kstDate.getUTCMonth() + 1).padStart(2, "0")}-${String(kstDate.getUTCDate()).padStart(2, "0")}`;
+
+  return sendTemplatedAlimtalk({
+    purpose: "RESERVATION_CANCELLED",
+    variables: {
+      "고객명": reservation.customerName || reservation.user.name || "고객",
+      "셀러샵명": reservation.seller.shopName,
+      "예약번호": reservation.reservationNumber,
+      "예약일": dateStr,
+    },
+    recipients: [
+      { phone, name: reservation.customerName || reservation.user.name || "고객님" },
+    ],
+    sellerId: reservation.seller.id,
+  });
+}
+
 /** 고객 회원가입 직후 환영 알림톡 발송 (카카오 승인 조건: 가입 즉시 1회). */
 export async function notifySignupWelcome(opts: {
   name: string;

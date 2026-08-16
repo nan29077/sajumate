@@ -48,6 +48,12 @@ export const ALIMTALK_PURPOSES: Record<string, AlimtalkPurposeDef> = {
     variables: ["고객명", "셀러샵명"],
     sampleVariables: { "고객명": "홍길동", "셀러샵명": "사주메이트" },
   },
+  RESERVATION_CANCELLED: {
+    label: "예약 취소 안내 (고객에게)",
+    description: "결제취소 승인 완료 시 고객에게 취소·환불 처리 결과를 안내",
+    variables: ["고객명", "셀러샵명", "예약번호", "예약일"],
+    sampleVariables: { "고객명": "홍길동", "셀러샵명": "테스트점집", "예약번호": "RSV-TEST-0001", "예약일": "2026-08-20" },
+  },
 };
 
 // 템플릿 미매핑 시 env로 대체할 용도 (기존 동작 호환)

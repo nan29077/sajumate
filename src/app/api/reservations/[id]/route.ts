@@ -220,11 +220,14 @@ export async function GET(
   );
 
   // 확정된 전화/방문 상담이면 상담사 연락처·상담소 주소를 공개한다 (마스킹 해제)
+  // UI에서 저장되는 값: "전화 상담", "방문 상담" (consultOptions.ts CONSULT_METHODS)
+  // 레거시 값: "전화", "방문" — 두 형태 모두 인식한다.
+  const isPhoneMethod = consultingMethod === "전화" || consultingMethod === "전화 상담";
+  const isVisitMethod = consultingMethod === "방문" || consultingMethod === "방문 상담";
   let consultantContact: { phone?: string | null; address?: string | null } | null = null;
   if (
     (reservation.status === "CONFIRMED" || reservation.status === "COMPLETED") &&
-    consultingMethod &&
-    ["전화", "방문"].includes(consultingMethod)
+    (isPhoneMethod || isVisitMethod)
   ) {
     const sellerDetail = await prisma.sellerProfile.findUnique({
       where: { id: reservation.sellerId },
@@ -234,8 +237,8 @@ export async function GET(
       },
     });
     consultantContact = {
-      ...(consultingMethod === "전화" ? { phone: sellerDetail?.user.phone ?? null } : {}),
-      ...(consultingMethod === "방문" ? { address: sellerDetail?.businessAddress ?? null } : {}),
+      ...(isPhoneMethod ? { phone: sellerDetail?.user.phone ?? null } : {}),
+      ...(isVisitMethod ? { address: sellerDetail?.businessAddress ?? null } : {}),
     };
   }
 

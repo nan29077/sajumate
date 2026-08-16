@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma";
+import { releaseTimeSlot } from "@/lib/timeSlotUtils";
 
 // 예약관리 목록(상담사·브랜드·관리자)에 노출할 예약의 공통 필터.
 // - PENDING(결제 진행 중·미결제) 제외
@@ -101,6 +102,9 @@ export async function cleanupStalePendingOrders(): Promise<number> {
           }
           await tx.referralCommission.delete({ where: { id: c.id } }).catch(() => {});
         }
+
+        // 타임슬롯 해제 — 삭제 전에 슬롯 먼저 해제 (삭제 후엔 reservationId 참조 불가)
+        await releaseTimeSlot(order.id, tx);
 
         // 예약 삭제 (OrderItem 은 onDelete: Cascade).
         // ── 레이스 가드 ──

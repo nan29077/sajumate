@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { releaseTimeSlot } from "@/lib/timeSlotUtils";
+import { notifyReservationCancelledToCustomer } from "@/lib/alimtalkTriggers";
 
 export const dynamic = "force-dynamic";
 
@@ -58,8 +60,11 @@ export async function POST(
     // 예약 최종 업데이트 + 이 예약에 적립된 미지급 고객 추천 커미션 취소.
     // 커미션을 함께 취소하지 않으면 취소된 예약의 커미션이 별도 정산 경로에서
     // 지급될 수 있다. 이미 지급(PAID)된 커미션은 건드리지 않는다. (docs/SETTLEMENT_ISSUES.md #6)
-    await prisma.$transaction([
-      (prisma.reservation.update as any)({
+    await prisma.$transaction(async (tx) => {
+      // 타임슬롯 해제 — 취소 승인 시 예약과 연결된 슬롯을 재예약 가능 상태로 되돌린다
+      await releaseTimeSlot(orderId, tx);
+
+      await (tx.reservation.update as any)({
         where: { id: orderId },
         data: {
           cancelApprovedAt: now,
@@ -69,12 +74,17 @@ export async function POST(
           cancelledAt: now,
           refundedAt: now,
         },
-      }),
-      prisma.referralCommission.updateMany({
+      });
+      await tx.referralCommission.updateMany({
         where: { reservationId: orderId, status: { in: ["PENDING", "CONFIRMED"] } },
         data: { status: "CANCELLED" },
-      }),
-    ]);
+      });
+    });
+
+    // 고객에게 취소 안내 알림톡 발송 (실패해도 취소 승인 결과에 영향 없음)
+    notifyReservationCancelledToCustomer(orderId).catch((e) =>
+      console.error(`[cancel-approve] 취소 알림톡 발송 실패 (${orderId}):`, e),
+    );
 
     return NextResponse.json({ cancelStatus: finalCancelStatus, message: "결제취소가 완료되었습니다." });
   } catch (e: any) {

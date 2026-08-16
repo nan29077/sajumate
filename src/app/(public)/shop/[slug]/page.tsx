@@ -315,33 +315,55 @@ export default async function SellerShopPage({
 
         <div className="relative -mt-11 px-4">
           <div className="rounded-[26px] border border-white/80 bg-white/95 p-4 pb-5 shadow-[0_18px_45px_rgba(48,30,91,0.12)] backdrop-blur-sm">
-            <div className="flex items-start gap-3">
-              <div className="flex flex-col items-center flex-shrink-0 -mt-8">
-                <div
-                  className={`relative h-[72px] w-[72px] overflow-hidden rounded-2xl bg-white shadow-md ring-4 ${
-                    showLive ? LIVE_RING_CLASS : "ring-white"
-                  }`}
-                >
-                  <SafeImage
-                    src={avatar}
-                    alt={seller.shopName}
-                    width={72}
-                    height={72}
-                    fallbackText={seller.shopName.charAt(0)}
-                  />
-                </div>
-              </div>
+            {(() => {
+              // 라이브 중이면 프로필 카드(아바타+이름) 전체를 내부 라이브 뷰어 링크로 감싼다.
+              // 라이브가 아니면 정적 카드(클릭 없음). 상단 바 로고는 항상 점집 홈으로 이동(그대로).
+              const inner = (
+                <>
+                  <div className="flex flex-col items-center flex-shrink-0 -mt-8">
+                    <div
+                      className={`relative h-[72px] w-[72px] overflow-hidden rounded-2xl bg-white shadow-md ring-4 ${
+                        showLive ? LIVE_RING_CLASS : "ring-white"
+                      }`}
+                    >
+                      <SafeImage
+                        src={avatar}
+                        alt={seller.shopName}
+                        width={72}
+                        height={72}
+                        fallbackText={seller.shopName.charAt(0)}
+                      />
+                    </div>
+                  </div>
 
-              <div className="min-w-0 flex-1 pt-0.5">
-                <div className="flex items-center gap-2">
-                  <h1 className="truncate text-[18px] font-extrabold tracking-[-0.025em] text-brand-950">{seller.user.name || seller.shopName}</h1>
-                  {showLive && <OnAirBadge />}
-                </div>
-                {customization.tagline && (
-                  <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-gray-500">{customization.tagline}</p>
-                )}
-              </div>
-            </div>
+                  <div className="min-w-0 flex-1 pt-0.5">
+                    <div className="flex items-center gap-2">
+                      <h1 className="truncate text-[18px] font-extrabold tracking-[-0.025em] text-brand-950">{seller.user.name || seller.shopName}</h1>
+                      {showLive && <OnAirBadge />}
+                    </div>
+                    {customization.tagline && (
+                      <p className="mt-1 line-clamp-2 text-[12px] leading-relaxed text-gray-500">{customization.tagline}</p>
+                    )}
+                    {showLive && liveHref && (
+                      <p className="mt-1 inline-flex items-center gap-0.5 text-[11px] font-bold text-violet-600">
+                        지금 라이브 보기 <span aria-hidden>›</span>
+                      </p>
+                    )}
+                  </div>
+                </>
+              );
+              return showLive && liveHref ? (
+                <Link
+                  href={liveHref}
+                  aria-label={`${seller.user.name || seller.shopName} 라이브 방송 보기`}
+                  className="-m-1 flex items-start gap-3 rounded-2xl p-1 transition active:opacity-80"
+                >
+                  {inner}
+                </Link>
+              ) : (
+                <div className="flex items-start gap-3">{inner}</div>
+              );
+            })()}
 
             {/* 상담 분야 태그 */}
             {consultTags.length > 0 && (

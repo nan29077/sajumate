@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { releaseTimeSlot } from "@/lib/timeSlotUtils";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,9 @@ export async function POST(_request: Request, { params }: { params: { id: string
         });
       }
     }
+
+    // 타임슬롯 해제 — 예약과 연결된 슬롯을 재예약 가능 상태로 되돌린다
+    await releaseTimeSlot(order.id, tx);
 
     await tx.reservation.update({
       where: { id: order.id },

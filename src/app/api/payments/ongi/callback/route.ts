@@ -6,7 +6,7 @@ import {
 } from "@/lib/ongi";
 import { logPayment } from "@/lib/paymentLog";
 import { notifyOrderPaid } from "@/lib/notifications";
-import { notifyOrderPlacedToSeller } from "@/lib/alimtalkTriggers";
+import { notifyOrderPlacedToSeller, notifyReservationConfirmedToCustomer } from "@/lib/alimtalkTriggers";
 import { ensureConsultingSession } from "@/lib/consultingSession";
 
 export const dynamic = "force-dynamic";
@@ -158,6 +158,8 @@ export async function POST(request: Request) {
   );
   // 결제 완료 → 해당 점집 상담사에게 예약접수 알림톡 (실패해도 결제 처리에 영향 없음)
   await notifyOrderPlacedToSeller(order.id).catch((e) => console.error("[ongi] 예약접수 알림톡 오류:", e));
+  // 결제 완료(=바로 CONFIRMED) → 고객에게 예약 확정 알림톡 발송 (실패해도 결제 흐름은 막지 않음)
+  await notifyReservationConfirmedToCustomer(order.id).catch((e) => console.error("[ongi] 고객 확정 알림톡 오류:", e));
   await logPayment({
     orderId: order.id,
     provider: "ongi",

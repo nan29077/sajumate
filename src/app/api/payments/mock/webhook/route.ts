@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { isMockPgEnabled, verifyMockWebhook } from "@/lib/mockPg";
 import { logPayment } from "@/lib/paymentLog";
 import { notifyOrderPaid } from "@/lib/notifications";
-import { notifyOrderPlacedToSeller } from "@/lib/alimtalkTriggers";
+import { notifyOrderPlacedToSeller, notifyReservationConfirmedToCustomer } from "@/lib/alimtalkTriggers";
 import { ensureConsultingSession } from "@/lib/consultingSession";
 
 export const dynamic = "force-dynamic";
@@ -110,9 +110,13 @@ export async function POST(request: Request) {
     console.error(`[mock/webhook] 영상 세션 생성 실패 (${order.id}):`, e);
   }
 
-  // 상담사 알림톡 + 고객 인앱 알림 (실제 PG 흐름과 동일)
+  // 상담사 알림톡 + 고객 확정 알림톡 + 고객 인앱 알림 (실제 PG 흐름과 동일)
   await notifyOrderPlacedToSeller(order.id).catch((e) =>
     console.error("[mock] 예약접수 알림톡 오류:", e),
+  );
+  // 결제 완료(=바로 CONFIRMED) → 고객에게 예약 확정 알림톡 발송
+  await notifyReservationConfirmedToCustomer(order.id).catch((e) =>
+    console.error("[mock] 고객 확정 알림톡 오류:", e),
   );
   await notifyOrderPaid(order.id).catch(() => {});
 

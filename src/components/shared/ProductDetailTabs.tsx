@@ -8,6 +8,14 @@ function stripEmoji(text: string): string {
   return text.replace(/[\u{1F300}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|\u26A0\uFE0F|\uD83D\uDCC9|\uD83D\uDCC8|\u2705|\uD83D\uDE4F|\u2696\uFE0F/gu, "").trim();
 }
 
+/** \uC0C1\uB2F4\uC0AC \uC785\uB825 HTML(detailContent)\uC5D0\uC11C script, on* \uC774\uBCA4\uD2B8, javascript: \uB97C \uC81C\uAC70\uD55C\uB2E4. */
+function sanitizeHtml(html: string): string {
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/javascript:/gi, '');
+}
+
 function RefundPolicyBlock({ text }: { text: string }) {
   const normalizedText = stripEmoji(text).replace(/\s+/g, " ").trim();
   const lines = normalizedText.split(/\s*(?=\d+\.\s|\u203B)/);
@@ -156,11 +164,20 @@ function StandardRefundCard() {
   );
 }
 
+export interface ReviewItem {
+  rating: number;
+  userName: string;
+  createdAt: string | Date;
+  content: string;
+}
+
 interface ProductDetailTabsProps {
   description?: string | null;
   detailContent?: string | null;
   reviewCount: number;
-  reviewsHtml: string;
+  /** reviewsHtml은 더 이상 사용하지 않음 — reviews 배열로 전달하세요 */
+  reviewsHtml?: string;
+  reviews?: ReviewItem[];
   embedded?: boolean;
 }
 
@@ -168,7 +185,7 @@ export default function ProductDetailTabs({
   description,
   detailContent,
   reviewCount,
-  reviewsHtml,
+  reviews = [],
   embedded = false,
 }: ProductDetailTabsProps) {
   const [activeTab, setActiveTab] = useState<"detail" | "review" | "info">("detail");
@@ -244,7 +261,7 @@ export default function ProductDetailTabs({
               <div className="px-4 pb-2">
                 <div
                   className="product-detail-content prose prose-sm max-w-none text-gray-700"
-                  dangerouslySetInnerHTML={{ __html: detailContent }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(detailContent) }}
                 />
               </div>
             )}
@@ -259,8 +276,36 @@ export default function ProductDetailTabs({
 
         {activeTab === "review" && (
           <div className="animate-fade-in px-4 py-5">
-            {reviewCount > 0 ? (
-              <div dangerouslySetInnerHTML={{ __html: reviewsHtml }} />
+            {reviews.length > 0 ? (
+              <div>
+                {reviews.map((r, idx) => (
+                  <div key={idx} className="pb-3 border-b border-gray-100 last:border-0 mb-3">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="flex gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <svg
+                            key={i}
+                            width="10"
+                            height="10"
+                            viewBox="0 0 24 24"
+                            fill={i < r.rating ? "black" : "none"}
+                            stroke={i < r.rating ? "black" : "#e5e7eb"}
+                            strokeWidth="2"
+                          >
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                          </svg>
+                        ))}
+                      </div>
+                      <span className="text-[11px] text-gray-500 font-medium">{r.userName}</span>
+                      <span className="text-[10px] text-gray-300">
+                        {new Date(r.createdAt).toLocaleDateString("ko-KR")}
+                      </span>
+                    </div>
+                    {/* XSS 방지: 리뷰 내용은 반드시 텍스트 노드로만 렌더링 */}
+                    <p className="text-sm text-gray-700 leading-relaxed">{r.content}</p>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="py-10 text-center">
                 <p className="text-sm text-gray-400">아직 후기가 없습니다.</p>
