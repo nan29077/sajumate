@@ -14,6 +14,10 @@ export default async function AdminUsersPage() {
 
   const [usersRaw, sellers, reservationCounts] = await Promise.all([
     prisma.user.findMany({
+      where: {
+        // 셀러브릭스 레거시 역할은 관리자 목록에서 제외 (DB 공유이므로 삭제 불가, 숨김 처리)
+        role: { notIn: ["SELLER", "BUYER", "NODE", "MIDDLE_ADMIN", "BRAND_ADMIN"] as any },
+      },
       include: {
         // reservations 는 운영 DB 미반영 가능성이 있어 _count 에서 제외하고 별도 집계
         _count: { select: { reviews: true } },
