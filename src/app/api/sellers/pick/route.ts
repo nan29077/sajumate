@@ -36,25 +36,29 @@ export async function POST(req: NextRequest) {
     });
 
     if (existing) {
-      // Unfollow
-      await prisma.sellerFollower.delete({ where: { id: existing.id } });
-      await prisma.sellerProfile.update({
-        where: { id: sellerId },
-        data: { totalFans: { decrement: 1 } },
-      });
+      // Unfollow — 팔로우 삭제와 팬 수 감소를 트랜잭션으로 묶어 드리프트 방지
+      await prisma.$transaction([
+        prisma.sellerFollower.delete({ where: { id: existing.id } }),
+        prisma.sellerProfile.update({
+          where: { id: sellerId },
+          data: { totalFans: { decrement: 1 } },
+        }),
+      ]);
       return NextResponse.json({ picked: false });
     } else {
-      // Follow
-      await prisma.sellerFollower.create({
-        data: {
-          buyerId: buyerProfile.id,
-          sellerId,
-        },
-      });
-      await prisma.sellerProfile.update({
-        where: { id: sellerId },
-        data: { totalFans: { increment: 1 } },
-      });
+      // Follow — 팔로우 생성과 팬 수 증가를 트랜잭션으로 묶어 드리프트 방지
+      await prisma.$transaction([
+        prisma.sellerFollower.create({
+          data: {
+            buyerId: buyerProfile.id,
+            sellerId,
+          },
+        }),
+        prisma.sellerProfile.update({
+          where: { id: sellerId },
+          data: { totalFans: { increment: 1 } },
+        }),
+      ]);
       return NextResponse.json({ picked: true });
     }
   } catch (error) {
