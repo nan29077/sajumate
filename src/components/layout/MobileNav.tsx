@@ -67,10 +67,13 @@ export default function MobileNav() {
     const isActive = matchExact || href === "/" ? pathname === href : pathname.startsWith(href);
     if (isActive) return;
     setTappedHref(href);
+    // 홈('/') 버튼: 비고객 역할(상담사/관리자)은 /?main=1 로 이동하여 대시보드 자동 리다이렉트 우회
+    const role = (session?.user as any)?.role;
+    const pushHref = href === "/" && role && role !== "CUSTOMER" ? "/?main=1" : href;
     startTransition(() => {
-      router.push(href);
+      router.push(pushHref);
     });
-  }, [pathname, router]);
+  }, [pathname, router, session]);
 
   useEffect(() => {
     if (!isPending && tappedHref) setTappedHref(null);
