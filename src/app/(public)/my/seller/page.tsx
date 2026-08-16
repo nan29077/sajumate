@@ -70,26 +70,6 @@ export default async function MySellerPage() {
 
   return (
     <div className="animate-fade-in pb-4">
-      <div className="sticky top-12 z-30 bg-white border-b border-gray-100 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <Link href="/my" className="text-gray-500 hover:text-gray-900">
-            <Icon
-              name="ArrowRight"
-              size={20}
-              strokeWidth={1.5}
-              className="rotate-180"
-            />
-          </Link>
-          <h1 className="text-base font-bold text-gray-900">
-            내 단골 상담사
-          </h1>
-          {uniqueSellers.length > 0 && (
-            <span className="text-xs text-brand-600 font-bold bg-brand-50 px-2 py-0.5 rounded-full">
-              {uniqueSellers.length}
-            </span>
-          )}
-        </div>
-      </div>
 
       <div className="px-4 pt-4">
         {/* 단골 유무와 관계없이 항상 상단에 검색 바 표시 */}
