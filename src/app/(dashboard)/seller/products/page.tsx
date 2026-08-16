@@ -40,7 +40,7 @@ export default async function SellerProductsPage() {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-5">
+      <div className="mb-5 pt-1">
         <h1 className="text-lg sm:text-xl font-bold text-gray-900">상담상품 관리</h1>
         <p className="text-xs text-gray-400 mt-0.5">영상·전화·방문 상담 상품을 등록하고 관리합니다.</p>
       </div>

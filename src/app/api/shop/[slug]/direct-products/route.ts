@@ -32,6 +32,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
       id: p.id,
       name: p.name,
       price: Number(p.price),
+      description: p.description,
       shippingFee: Number(p.shippingFee),
       images: (() => { try { return JSON.parse(p.images || "[]"); } catch { return []; } })(),
       stock: p.stock,

@@ -11,6 +11,7 @@ import ShopContextSync from "@/components/shared/ShopContextSync";
 import ShopBookingCalendar, { type DaySlots } from "@/components/shared/ShopBookingCalendar";
 import ShopShareButton from "@/components/shared/ShopShareButton";
 import ReservationCountdown from "@/components/shop/ReservationCountdown";
+import DirectProductSection, { type DirectProductItem } from "@/components/shop/DirectProductSection";
 import { CalendarCheck, Clock, Video, Phone, MapPin, Sparkles, ChevronRight, CalendarDays } from "lucide-react";
 import { getFeatureFlags } from "@/lib/settings";
 import { DEFAULT_PRODUCT_IMAGE, resolveSellerDisplayImage, resolveShopBanner } from "@/lib/defaults";
@@ -76,6 +77,7 @@ function sellerInclude(productSelect: object) {
       take: 1,
       select: { id: true, shareCode: true, title: true },
     },
+    shopExposure: true,
     _count: { select: { fans: true, followers: true } },
   };
 }
@@ -281,6 +283,34 @@ export default async function SellerShopPage({
       )
     : [];
 
+  // ─── 상담상품(DirectProduct) — shopExposure 기준 ───
+  const directProducts: DirectProductItem[] = await safeQuery(
+    "shop page direct products",
+    async () => {
+      const exposure = (seller as any).shopExposure as { isEnabled: boolean; productIds: string | null } | null;
+      if (!exposure || !exposure.isEnabled) return [];
+      const selectedIds: string[] = (() => {
+        try { return JSON.parse(exposure.productIds || "[]"); } catch { return []; }
+      })();
+      if (selectedIds.length === 0) return [];
+      const rows = await prisma.directProduct.findMany({
+        where: { sellerId: seller.id, id: { in: selectedIds }, isActive: true },
+        select: { id: true, name: true, price: true, description: true, images: true },
+      });
+      const orderMap = new Map(selectedIds.map((id, i) => [id, i]));
+      return rows
+        .sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0))
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          price: Number(p.price),
+          description: p.description,
+          images: (() => { try { return JSON.parse(p.images || "[]"); } catch { return []; } })(),
+        }));
+    },
+    [] as DirectProductItem[],
+  );
+
   // ─── 라이브 진행 여부 ───
   const currentLive = seller.liveStreams[0] ?? null;
   const manualLiveOn = (seller as any).isManualLive ?? false;
@@ -435,66 +465,89 @@ export default async function SellerShopPage({
           </div>
           <p className="text-[11px] text-gray-400 mb-3">원하는 상담을 고르면 예약 화면으로 이동합니다</p>
 
-          {products.length === 0 ? (
+          {products.length === 0 && directProducts.length === 0 ? (
             <p className="py-10 text-center text-[13px] text-gray-400">
               아직 등록된 상담 메뉴가 없습니다.
             </p>
           ) : (
-            <ul className="space-y-2.5">
-              {products.map((p) => {
-                const mm = methodMeta(p.consultingMethod);
-                return (
-                  <li key={p.id}>
-                    <Link
-                      href={`${bookHref}?productId=${p.id}`}
-                      className="flex items-center gap-3 rounded-2xl border border-transparent bg-[#FAF9FD] p-3 transition-all hover:border-brand-100 hover:bg-white hover:shadow-sm active:scale-[0.99]"
-                    >
-                      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl bg-brand-50">
-                        <SafeImage
-                          src={p.thumbnail}
-                          placeholder={DEFAULT_PRODUCT_IMAGE}
-                          alt={p.name}
-                          width={64}
-                          height={64}
-                          fallbackText={p.name.charAt(0)}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-bold text-gray-900 truncate">{p.name}</p>
-                        <div className="mt-1 flex items-center gap-2 text-[10px] text-gray-400 flex-wrap">
-                          {p.consultingType && (
-                            <span className="px-1.5 py-0.5 rounded bg-gray-50 text-gray-500 font-medium">
-                              {p.consultingType}
-                            </span>
-                          )}
-                          {p.durationMinutes && (
-                            <span className="inline-flex items-center gap-0.5">
-                              <Clock size={11} strokeWidth={1.6} />
-                              {p.durationMinutes}분
-                            </span>
-                          )}
-                          {mm && (
-                            <span className="inline-flex items-center gap-0.5">
-                              <mm.Icon size={11} strokeWidth={1.6} />
-                              {mm.label}
-                            </span>
-                          )}
-                        </div>
-                        <p className="mt-1 text-[15px] font-extrabold" style={{ color: themeColor }}>
-                          {formatPrice(p.price)}
-                        </p>
-                      </div>
-                      <span
-                        className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex-shrink-0"
-                        style={{ backgroundColor: `${themeColor}18`, color: themeColor }}
-                      >
-                        예약하기
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="space-y-2.5">
+              {/* 달력 예약 상품 */}
+              {products.length > 0 && (
+                <ul className="space-y-2.5">
+                  {products.map((p) => {
+                    const mm = methodMeta(p.consultingMethod);
+                    return (
+                      <li key={p.id}>
+                        <Link
+                          href={`${bookHref}?productId=${p.id}`}
+                          className="flex items-center gap-3 rounded-2xl border border-transparent bg-[#FAF9FD] p-3 transition-all hover:border-brand-100 hover:bg-white hover:shadow-sm active:scale-[0.99]"
+                        >
+                          <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl bg-brand-50">
+                            <SafeImage
+                              src={p.thumbnail}
+                              placeholder={DEFAULT_PRODUCT_IMAGE}
+                              alt={p.name}
+                              width={64}
+                              height={64}
+                              fallbackText={p.name.charAt(0)}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[13px] font-bold text-gray-900 truncate">{p.name}</p>
+                            <div className="mt-1 flex items-center gap-2 text-[10px] text-gray-400 flex-wrap">
+                              {p.consultingType && (
+                                <span className="px-1.5 py-0.5 rounded bg-gray-50 text-gray-500 font-medium">
+                                  {p.consultingType}
+                                </span>
+                              )}
+                              {p.durationMinutes && (
+                                <span className="inline-flex items-center gap-0.5">
+                                  <Clock size={11} strokeWidth={1.6} />
+                                  {p.durationMinutes}분
+                                </span>
+                              )}
+                              {mm && (
+                                <span className="inline-flex items-center gap-0.5">
+                                  <mm.Icon size={11} strokeWidth={1.6} />
+                                  {mm.label}
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-1 text-[15px] font-extrabold" style={{ color: themeColor }}>
+                              {formatPrice(p.price)}
+                            </p>
+                          </div>
+                          <span
+                            className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex-shrink-0"
+                            style={{ backgroundColor: `${themeColor}18`, color: themeColor }}
+                          >
+                            예약하기
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+
+              {/* 시간 선택 상담상품 (DirectProduct) */}
+              {directProducts.length > 0 && (
+                <>
+                  {products.length > 0 && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <div className="flex-1 h-px bg-gray-100" />
+                      <span className="text-[10px] text-gray-400 font-medium">즉시 예약</span>
+                      <div className="flex-1 h-px bg-gray-100" />
+                    </div>
+                  )}
+                  <DirectProductSection
+                    products={directProducts}
+                    sellerId={seller.id}
+                    themeColor={themeColor}
+                  />
+                </>
+              )}
+            </div>
           )}
         </div>
       </section>

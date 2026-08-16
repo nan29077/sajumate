@@ -17,12 +17,14 @@ export default async function CheckoutPage({
     sellerId?: string;
     campaignId?: string;
     quantity?: string;
+    selectedDuration?: string;
+    selectedPrice?: string;
   };
 }) {
   const session = await auth();
   if (!session) redirect(getShopAwareLoginPath());
 
-  const { type, productId, variantId, sellerId, quantity } = searchParams;
+  const { type, productId, variantId, sellerId, quantity, selectedDuration, selectedPrice } = searchParams;
   if (!productId || !sellerId) redirect("/");
 
   const qty = Math.max(1, parseInt(quantity || "1", 10) || 1);
@@ -34,7 +36,7 @@ export default async function CheckoutPage({
     const [direct, directSeller] = await Promise.all([
       prisma.directProduct.findUnique({
         where: { id: productId },
-        select: { id: true, name: true, images: true, price: true, isActive: true, sellerId: true },
+        select: { id: true, name: true, images: true, price: true, description: true, isActive: true, sellerId: true },
       }),
       prisma.sellerProfile.findUnique({ where: { id: sellerId }, select: { id: true, shopName: true } }),
     ]);
@@ -43,6 +45,30 @@ export default async function CheckoutPage({
     if (!direct || !direct.isActive || !directSeller || direct.sellerId !== directSeller.id) redirect("/");
 
     const images = parseJsonArray(direct.images);
+
+    // ── 시간 옵션이 선택된 경우 가격 검증 ──
+    // URL 파라미터 변조를 방지하기 위해 서버에서 durations 배열과 대조한다.
+    let finalPrice = Number(direct.price);
+    let variantLabel: string | null = null;
+    if (selectedDuration && selectedPrice) {
+      try {
+        const desc = JSON.parse(direct.description || "{}");
+        const durations: { duration: number; price: number }[] = Array.isArray(desc.durations) ? desc.durations : [];
+        const dur = parseInt(selectedDuration, 10);
+        const price = parseInt(selectedPrice, 10);
+        const matched = durations.find((d) => d.duration === dur && d.price === price);
+        if (matched) {
+          finalPrice = matched.price;
+          // 시간 레이블 생성
+          const h = Math.floor(matched.duration / 60);
+          const m = matched.duration % 60;
+          const durLabel = h === 0 ? `${m}분` : m === 0 ? `${h}시간` : `${h}시간 ${m}분`;
+          variantLabel = durLabel;
+        }
+      } catch {
+        /* 파싱 실패 시 기본 가격 사용 */
+      }
+    }
 
     return (
       <CheckoutClient
@@ -54,10 +80,10 @@ export default async function CheckoutPage({
           sellerId: directSeller.id,
           sellerName: directSeller.shopName,
           variantId: null,
-          variantName: null,
+          variantName: variantLabel,
           campaignId: null,
           campaignTitle: null,
-          price: Number(direct.price),
+          price: finalPrice,
           quantity: qty,
           isCampaign: false,
           // 상담 서비스라 배송비가 없다.

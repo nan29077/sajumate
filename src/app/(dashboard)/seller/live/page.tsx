@@ -635,7 +635,7 @@ export default function SellerLivePage() {
           <p className="text-xs sm:text-sm text-gray-500 mt-0.5">방송과 실시간 상담을 관리합니다 · 전체 {lives.length}개 · 진행/예정 {liveCount}개</p>
           </div>
         </div>
-        <button onClick={openCreate} className="btn-primary text-sm flex items-center gap-1.5 !px-4 !py-2.5">
+        <button onClick={openCreate} className="btn-primary text-sm flex items-center gap-1.5 !px-4 !py-2.5 whitespace-nowrap">
           <Icon name="Plus" size={16} /> 새 라이브
         </button>
       </div>
