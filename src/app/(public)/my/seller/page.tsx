@@ -12,6 +12,7 @@ import { isSellerLive, sellerProfileImage } from "@/lib/sellerLive";
 import LiveStatusPoller from "@/components/shared/LiveStatusPoller";
 import { LIVE_RING_CLASS, OnAirBadge } from "@/components/shared/LiveBadge";
 import { getFeatureFlags } from "@/lib/settings";
+import ConsultantSearchWidget from "@/components/shared/ConsultantSearchWidget";
 
 export const dynamic = "force-dynamic";
 
@@ -105,14 +106,9 @@ export default async function MySellerPage() {
               마음에 드는 상담사를 단골로 등록하고 소식을 받아보세요!
             </p>
             <p className="text-[11px] text-gray-400 mt-3">
-              메인에서 상담사 이름을 검색해 단골로 등록할 수 있어요
+              이름 또는 코드로 상담사를 검색해 단골로 등록할 수 있어요
             </p>
-            <Link
-              href={FEATURE_SELLER ? "/sellers" : "/"}
-              className="mt-5 inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-800"
-            >
-              상담사 찾기
-            </Link>
+            <ConsultantSearchWidget />
           </div>
         ) : (
           <div className="space-y-3">

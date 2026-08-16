@@ -17,6 +17,8 @@ export async function GET(request: Request) {
   const sellers = await prisma.sellerProfile.findMany({
     where: {
       isApproved: true,
+      // CONSULTANT 역할만 검색 — 셀러브릭스 SELLER 잔재 계정 제외
+      user: { role: "CONSULTANT" },
       OR: [
         { shopName: { contains: q } },
         { slug: { contains: q } },
