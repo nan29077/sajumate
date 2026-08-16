@@ -242,20 +242,28 @@ export async function POST(request: Request) {
         });
         const cover = slotsForWindow(daySlots, slot.startTime, durationMinutes);
         if (!cover) throw new Error("NOT_ENOUGH_TIME");
-        await tx.timeSlot.updateMany({
-          where: { id: { in: cover.map((cs) => cs.id) } },
-          data: { isAvailable: false },
-        });
-        await tx.timeSlot.update({
-          where: { id: timeSlotId },
-          data: { reservationId: reservation.id },
-        });
-      } else {
-        // 레거시(단일 슬롯) 예약: 선택한 슬롯만 잠근다.
-        await tx.timeSlot.update({
-          where: { id: timeSlotId },
+        // 시작 슬롯을 조건부 updateMany 로 원자적으로 선점 — 동시 요청 시 한 건만 성공
+        const claimed = await tx.timeSlot.updateMany({
+          where: { id: timeSlotId, isAvailable: true, reservationId: null },
           data: { isAvailable: false, reservationId: reservation.id },
         });
+        if (claimed.count === 0) throw new Error("SLOT_TAKEN");
+        // 나머지 구간 슬롯도 가용 상태였던 것만 차단 — 하나라도 이미 잠겼으면 전체 롤백
+        const restIds = cover.map((cs) => cs.id).filter((id) => id !== timeSlotId);
+        if (restIds.length > 0) {
+          const blocked = await tx.timeSlot.updateMany({
+            where: { id: { in: restIds }, isAvailable: true, reservationId: null },
+            data: { isAvailable: false },
+          });
+          if (blocked.count !== restIds.length) throw new Error("SLOT_TAKEN");
+        }
+      } else {
+        // 레거시(단일 슬롯) 예약: 조건부 updateMany 로 원자적으로 선점 — 동시 요청 시 한 건만 성공
+        const claimed = await tx.timeSlot.updateMany({
+          where: { id: timeSlotId, isAvailable: true, reservationId: null },
+          data: { isAvailable: false, reservationId: reservation.id },
+        });
+        if (claimed.count === 0) throw new Error("SLOT_TAKEN");
       }
 
       return reservation;
