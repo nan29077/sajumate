@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { X, Sparkles } from 'lucide-react';
 import SafeImage from "@/components/shared/SafeImage";
 
-import LiveBadge, { LIVE_RING_CLASS } from "@/components/shared/LiveBadge";
+import LiveBadge, { OnAirBadge, LIVE_RING_CLASS } from "@/components/shared/LiveBadge";
 
 interface SellerResult {
   slug: string;
@@ -158,7 +158,7 @@ export default function SellerSearchHero() {
                         onClick={() => goToSeller(s)}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors text-left"
                       >
-                        <div className="relative flex-shrink-0">
+                        <div className="flex-shrink-0">
                           <div className={`w-10 h-10 rounded-full overflow-hidden bg-gray-100 ${s.isLive ? LIVE_RING_CLASS : "ring-1 ring-gray-100"}`}>
                             <SafeImage
                               src={s.profileImage}
@@ -168,10 +168,12 @@ export default function SellerSearchHero() {
                               fallbackText={s.shopName.charAt(0)}
                             />
                           </div>
-                          {s.isLive && <LiveBadge className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 truncate">{s.shopName}</p>
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{s.shopName}</p>
+                            {s.isLive && <OnAirBadge />}
+                          </div>
                           <p className="text-[11px] text-gray-400 truncate">
                             {s.category || s.mood || "라이브 점집"}
                           </p>

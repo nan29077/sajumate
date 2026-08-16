@@ -11,6 +11,7 @@ import { pickSajuAvatar } from "@/lib/defaults";
 import { isSellerLive, sellerProfileImage } from "@/lib/sellerLive";
 import LiveStatusPoller from "@/components/shared/LiveStatusPoller";
 import { LIVE_RING_CLASS, OnAirBadge } from "@/components/shared/LiveBadge";
+import { getFeatureFlags } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ export const dynamic = "force-dynamic";
 export default async function MySellerPage() {
   const session = await auth();
   if (!session?.user) redirect(getShopAwareLoginPath());
+  const { seller: FEATURE_SELLER } = await getFeatureFlags();
 
   const profile = await prisma.buyerProfile.findUnique({
     where: { userId: session.user!.id },
@@ -106,7 +108,7 @@ export default async function MySellerPage() {
               메인에서 상담사 이름을 검색해 단골로 등록할 수 있어요
             </p>
             <Link
-              href="/sellers"
+              href={FEATURE_SELLER ? "/sellers" : "/"}
               className="mt-5 inline-block px-5 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-800"
             >
               상담사 찾기
