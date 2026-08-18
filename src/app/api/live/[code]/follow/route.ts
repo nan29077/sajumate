@@ -33,22 +33,27 @@ export async function POST(
       where: { buyerId_sellerId: { buyerId: buyer.id, sellerId: live.sellerId } },
     });
 
+    // 팔로우 레코드와 팬 수 카운터를 트랜잭션으로 원자화 (sellers/pick 과 동일 패턴)
     if (existing) {
-      await prisma.sellerFollower.delete({ where: { id: existing.id } });
-      await prisma.sellerProfile.update({
-        where: { id: live.sellerId },
-        data: { totalFans: { decrement: 1 } },
-      });
+      await prisma.$transaction([
+        prisma.sellerFollower.delete({ where: { id: existing.id } }),
+        prisma.sellerProfile.update({
+          where: { id: live.sellerId },
+          data: { totalFans: { decrement: 1 } },
+        }),
+      ]);
       return NextResponse.json({ following: false });
     }
 
-    await prisma.sellerFollower.create({
-      data: { buyerId: buyer.id, sellerId: live.sellerId },
-    });
-    await prisma.sellerProfile.update({
-      where: { id: live.sellerId },
-      data: { totalFans: { increment: 1 } },
-    });
+    await prisma.$transaction([
+      prisma.sellerFollower.create({
+        data: { buyerId: buyer.id, sellerId: live.sellerId },
+      }),
+      prisma.sellerProfile.update({
+        where: { id: live.sellerId },
+        data: { totalFans: { increment: 1 } },
+      }),
+    ]);
     return NextResponse.json({ following: true });
   } catch (error) {
     console.error("채널 팔로우 오류:", error);

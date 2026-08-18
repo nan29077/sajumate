@@ -9,6 +9,9 @@ import { randomAvatar, randomSajuAvatar, pickRoleAvatar } from "@/lib/defaults";
 import { getRegisterFieldSettings } from "@/lib/settings";
 import { notifySignupWelcome } from "@/lib/alimtalkTriggers";
 
+// 이메일 형식 검증 — 공백 없이 local@domain.tld 형태
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function POST(request: NextRequest) {
   try {
     const {
@@ -32,6 +35,7 @@ export async function POST(request: NextRequest) {
     const address1Trimmed = typeof address1 === "string" ? address1.trim() : "";
     if (!nameTrimmed) return NextResponse.json({ error: "이름을 입력해주세요." }, { status: 400 });
     if (!emailTrimmed) return NextResponse.json({ error: "이메일을 입력해주세요." }, { status: 400 });
+    if (!EMAIL_REGEX.test(emailTrimmed)) return NextResponse.json({ error: "올바른 이메일 형식이 아닙니다." }, { status: 400 });
     if (typeof password !== "string" || !password) return NextResponse.json({ error: "비밀번호를 입력해주세요." }, { status: 400 });
     if (password.length < 8) return NextResponse.json({ error: "비밀번호는 8자 이상이어야 합니다" }, { status: 400 });
     if (fieldSettings.phone === "required" && !phoneDigits) return NextResponse.json({ error: "휴대전화번호를 입력해주세요." }, { status: 400 });
@@ -133,7 +137,11 @@ export async function POST(request: NextRequest) {
         : "회원가입이 완료되었습니다. 바로 로그인하실 수 있습니다.",
       needsApproval: userRole === "CONSULTANT",
     });
-  } catch (error) {
+  } catch (error: any) {
+    // 이메일 unique 충돌 — 사전 중복 체크와 생성 사이에 동시 가입(race)이 발생한 경우 500 대신 409
+    if (error?.code === "P2002" && String(error?.meta?.target ?? "").includes("email")) {
+      return NextResponse.json({ error: "이미 사용 중인 이메일입니다." }, { status: 409 });
+    }
     console.error("Registration error:", error);
     return NextResponse.json({ error: "서버 오류가 발생했습니다" }, { status: 500 });
   }

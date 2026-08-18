@@ -8,7 +8,17 @@ import {
   getReservationConsultingInfo,
 } from "@/lib/consultingSession";
 import { notifyReservationConfirmedToCustomer } from "@/lib/alimtalkTriggers";
-import { parseVariantName, timeToMinutes } from "@/lib/consultOptions";
+import { releaseTimeSlot } from "@/lib/timeSlotUtils";
+
+// 예약 상태 전환 허용 맵 — 종결 상태(COMPLETED/CANCELLED/NO_SHOW)는 되돌릴 수 없다.
+// (취소된 예약을 CONFIRMED 로 되돌리면 이미 해제된 슬롯에 이중 예약이 발생)
+const STATUS_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["COMPLETED", "CANCELLED", "NO_SHOW"],
+  COMPLETED: [],
+  CANCELLED: [],
+  NO_SHOW: [],
+};
 
 export const dynamic = "force-dynamic";
 
@@ -74,7 +84,21 @@ export async function PATCH(
       return NextResponse.json({ error: "허용되지 않은 상태 변경입니다." }, { status: 400 });
     }
   }
-  // SUPER_ADMIN: 모든 변경 허용
+  // SUPER_ADMIN: 역할 제한은 없지만 아래 상태 전환 규칙은 동일하게 적용
+
+  // 동일 상태로의 변경은 무시 (중복 클릭 등) — 부수효과 없이 현재 예약 반환
+  if (status === reservation.status) {
+    return NextResponse.json({ reservation });
+  }
+
+  // 상태 전환 검증 — 허용되지 않은 전환(예: CANCELLED → CONFIRMED)은 400
+  const allowedNext = STATUS_TRANSITIONS[reservation.status] ?? [];
+  if (!allowedNext.includes(status)) {
+    return NextResponse.json(
+      { error: `현재 상태(${reservation.status})에서 ${status} 상태로 변경할 수 없습니다.` },
+      { status: 400 },
+    );
+  }
 
   // 상태 변경 시각 업데이트
   const now = new Date();
@@ -84,49 +108,24 @@ export async function PATCH(
   else if (status === "CANCELLED") extraData.cancelledAt = now;
   else if (status === "NO_SHOW") extraData.noShowAt = now;
 
-  // 취소 시 슬롯 해제. 변형(방식×시간) 예약이면 소요시간 구간 전체를, 레거시면 시작 슬롯만 되돌린다.
-  if (status === "CANCELLED") {
-    const slot = await prisma.timeSlot.findFirst({
-      where: { reservationId: id },
-    });
-    if (slot) {
-      const item = await prisma.reservationItem.findFirst({
-        where: { reservationId: id },
-        select: { variantName: true },
-      });
-      const minutes = item?.variantName ? parseVariantName(item.variantName).minutes : 0;
-      if (minutes > 0) {
-        const startMin = timeToMinutes(slot.startTime);
-        const windowEnd = startMin + minutes;
-        const closed = await prisma.timeSlot.findMany({
-          where: { consultantId: slot.consultantId, date: slot.date, isAvailable: false },
-          select: { id: true, startTime: true },
-        });
-        const toFree = closed
-          .filter((cs) => {
-            const st = timeToMinutes(cs.startTime);
-            return st >= startMin && st < windowEnd;
-          })
-          .map((cs) => cs.id);
-        if (toFree.length > 0) {
-          await prisma.timeSlot.updateMany({
-            where: { id: { in: toFree } },
-            data: { isAvailable: true, reservationId: null },
-          });
-        }
-      } else {
-        await prisma.timeSlot.update({
-          where: { id: slot.id },
-          data: { isAvailable: true, reservationId: null },
-        });
+  // 슬롯 해제(취소 시)와 예약 상태 갱신을 하나의 트랜잭션으로 원자화한다.
+  // 취소 시 슬롯 해제는 변형(방식×시간) 예약이면 소요시간 구간 전체를,
+  // 레거시면 시작 슬롯만 되돌린다 (releaseTimeSlot 공통 로직).
+  let updated;
+  try {
+    updated = await prisma.$transaction(async (tx) => {
+      if (status === "CANCELLED") {
+        await releaseTimeSlot(id, tx);
       }
-    }
+      return tx.reservation.update({
+        where: { id },
+        data: { status, ...extraData },
+      });
+    });
+  } catch (e) {
+    if (isMissingSchemaError(e)) return schemaDriftResponse();
+    throw e;
   }
-
-  const updated = await prisma.reservation.update({
-    where: { id },
-    data: { status, ...extraData },
-  });
 
   // 예약 확정 → 영상 상담이면 세션 자동 생성 + 고객 알림톡 (실패해도 확정 흐름은 유지)
   if (status === "CONFIRMED") {

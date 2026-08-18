@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizePhone } from "@/lib/aligo";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // 아이디(이메일) 일부를 가려서 반환한다. 예) abcdef@gmail.com → abc***@gmail.com
 function maskEmail(email: string): string {
@@ -23,6 +24,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "이름과 전화번호를 정확히 입력해주세요." },
         { status: 400 },
+      );
+    }
+
+    // 레이트리밋 — 같은 IP 또는 같은 전화번호로 분당 5회 제한 (무차별 대입 방지)
+    const ip = getClientIp(request);
+    if (
+      !checkRateLimit(`find-id:ip:${ip}`) ||
+      !checkRateLimit(`find-id:phone:${normalizedPhone}`)
+    ) {
+      return NextResponse.json(
+        { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+        { status: 429 },
       );
     }
 

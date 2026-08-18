@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { normalizePhone, sendSms } from "@/lib/aligo";
 import { logAligoSend } from "@/lib/aligoLog";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // 혼동되기 쉬운 문자(0/O, 1/l/I 등)를 제외한 임시 비밀번호 문자셋
 const TEMP_PW_CHARS = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -31,6 +32,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "아이디(이메일), 이름, 전화번호를 모두 입력해주세요." },
         { status: 400 },
+      );
+    }
+
+    // 레이트리밋 — 같은 IP 또는 같은 전화번호로 분당 5회 제한 (무차별 대입·SMS 폭탄 방지)
+    const ip = getClientIp(request);
+    if (
+      !checkRateLimit(`forgot-password:ip:${ip}`) ||
+      !checkRateLimit(`forgot-password:phone:${normalizedPhone}`)
+    ) {
+      return NextResponse.json(
+        { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+        { status: 429 },
       );
     }
 

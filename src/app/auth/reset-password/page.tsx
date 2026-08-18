@@ -41,8 +41,8 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (password.length < 6) {
-      setError("새 비밀번호는 6자 이상이어야 합니다.");
+    if (password.length < 8) {
+      setError("새 비밀번호는 8자 이상이어야 합니다.");
       return;
     }
     if (password !== confirm) {
@@ -100,7 +100,7 @@ export default function ResetPasswordPage() {
                 <input
                   type={show ? "text" : "password"}
                   className="input-field text-sm py-2.5 pr-10"
-                  placeholder="6자 이상 입력하세요"
+                  placeholder="8자 이상 입력하세요"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="new-password"

@@ -533,7 +533,7 @@ export async function POST(req: NextRequest) {
     const coupon = await prisma.liveCoupon.findUnique({ where: { id: body.couponId } });
     if (!coupon) return NextResponse.json({ error: "쿠폰을 찾을 수 없습니다." }, { status: 404 });
 
-    // 수량 소진 확인
+    // 수량 소진 확인 (1차 — 빠른 응답용. 최종 확정은 아래 조건부 갱신에서 원자적으로 판정)
     if (coupon.maxCount !== null && coupon.issuedCount >= coupon.maxCount) {
       return NextResponse.json({ error: "쿠폰이 모두 소진되었습니다.", soldOut: true }, { status: 400 });
     }
@@ -546,16 +546,103 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ alreadyClaimed: true, message: "이미 수령한 쿠폰입니다.", couponCode: coupon.code });
     }
 
-    // 쿠폰 발급
-    await prisma.$transaction([
-      prisma.userCoupon.create({ data: { liveCouponId: body.couponId, userId: session.user!.id } }),
-      prisma.liveCoupon.update({ where: { id: body.couponId }, data: { issuedCount: { increment: 1 } } }),
-    ]);
+    // 쿠폰 발급 — issuedCount < maxCount 조건부 갱신으로 동시 요청 초과 발급(race) 방지
+    try {
+      await prisma.$transaction(async (tx) => {
+        const claimed = await tx.liveCoupon.updateMany({
+          where: {
+            id: body.couponId,
+            ...(coupon.maxCount !== null ? { issuedCount: { lt: coupon.maxCount } } : {}),
+          },
+          data: { issuedCount: { increment: 1 } },
+        });
+        if (claimed.count === 0) throw new Error("COUPON_SOLD_OUT");
+        await tx.userCoupon.create({ data: { liveCouponId: body.couponId, userId: session.user!.id } });
+      });
+    } catch (e: any) {
+      if (e instanceof Error && e.message === "COUPON_SOLD_OUT") {
+        return NextResponse.json({ error: "쿠폰이 모두 소진되었습니다.", soldOut: true }, { status: 400 });
+      }
+      // 동시 중복 수령(userCoupon unique 충돌) — 이미 수령한 것으로 응답 (increment 는 트랜잭션 롤백됨)
+      if (e?.code === "P2002") {
+        return NextResponse.json({ alreadyClaimed: true, message: "이미 수령한 쿠폰입니다.", couponCode: coupon.code });
+      }
+      throw e;
+    }
 
     return NextResponse.json({ success: true, couponCode: coupon.code });
   }
 
+  // 시청자 입장/퇴장 — viewerCount 증감, peakViewerCount 는 최대값 유지
+  if (action === "join" || action === "leave") {
+    if (!body.liveId) return NextResponse.json({ error: "liveId가 필요합니다." }, { status: 400 });
+    const target = await prisma.liveStream.findUnique({
+      where: { id: body.liveId },
+      select: { id: true },
+    });
+    if (!target) return NextResponse.json({ error: "라이브를 찾을 수 없습니다." }, { status: 404 });
+
+    if (action === "join") {
+      const live = await prisma.$transaction(async (tx) => {
+        const inc = await tx.liveStream.update({
+          where: { id: body.liveId },
+          data: { viewerCount: { increment: 1 } },
+          select: { viewerCount: true, peakViewerCount: true },
+        });
+        if (inc.viewerCount > inc.peakViewerCount) {
+          return tx.liveStream.update({
+            where: { id: body.liveId },
+            data: { peakViewerCount: inc.viewerCount },
+            select: { viewerCount: true, peakViewerCount: true },
+          });
+        }
+        return inc;
+      });
+      return NextResponse.json({ success: true, viewerCount: live.viewerCount, peakViewerCount: live.peakViewerCount });
+    }
+
+    // leave — 0 미만으로 내려가지 않도록 조건부 감소
+    await prisma.liveStream.updateMany({
+      where: { id: body.liveId, viewerCount: { gt: 0 } },
+      data: { viewerCount: { decrement: 1 } },
+    });
+    const live = await prisma.liveStream.findUnique({
+      where: { id: body.liveId },
+      select: { viewerCount: true, peakViewerCount: true },
+    });
+    return NextResponse.json({
+      success: true,
+      viewerCount: live?.viewerCount ?? 0,
+      peakViewerCount: live?.peakViewerCount ?? 0,
+    });
+  }
+
+  // 좋아요 — likeCount +1
+  if (action === "like") {
+    if (!body.liveId) return NextResponse.json({ error: "liveId가 필요합니다." }, { status: 400 });
+    const liked = await prisma.liveStream.updateMany({
+      where: { id: body.liveId },
+      data: { likeCount: { increment: 1 } },
+    });
+    if (liked.count === 0) return NextResponse.json({ error: "라이브를 찾을 수 없습니다." }, { status: 404 });
+    const live = await prisma.liveStream.findUnique({
+      where: { id: body.liveId },
+      select: { likeCount: true },
+    });
+    return NextResponse.json({ success: true, likeCount: live?.likeCount ?? 0 });
+  }
+
   if (action === "delete") {
+    // 라이브에 연결된 예약의 FK 를 먼저 끊는다 (liveStreamId 참조로 인한 삭제 실패 방어).
+    // 예약 테이블 미반영(P2021) 환경에서는 건너뛴다.
+    try {
+      await prisma.reservation.updateMany({
+        where: { liveStreamId: body.liveId },
+        data: { liveStreamId: null },
+      });
+    } catch (e) {
+      if (!isMissingSchemaError(e)) throw e;
+    }
     await prisma.liveChatMessage.deleteMany({ where: { liveStreamId: body.liveId } });
     await prisma.liveStreamProduct.deleteMany({ where: { liveStreamId: body.liveId } });
     await prisma.liveStream.delete({ where: { id: body.liveId } });

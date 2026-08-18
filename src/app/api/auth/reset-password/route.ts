@@ -13,9 +13,10 @@ export async function POST(req: NextRequest) {
     }
 
     const { newPassword } = (await req.json()) as { newPassword?: string };
-    if (!newPassword || newPassword.length < 6) {
+    // 회원가입(register)과 동일하게 8자 이상으로 통일
+    if (!newPassword || newPassword.length < 8) {
       return NextResponse.json(
-        { error: "새 비밀번호는 6자 이상이어야 합니다." },
+        { error: "새 비밀번호는 8자 이상이어야 합니다." },
         { status: 400 },
       );
     }
